@@ -2,11 +2,11 @@ const matches = [
   {
     id: 1,
     competition: "Brasileirão",
-    home: "Palmeiras",
-    away: "Flamengo",
+    home: "Corinthians",
+    away: "Palmeiras",
 
-    homeLogo: "",
-    awayLogo: "",
+    homeLogo: "https://media.api-sports.io/football/teams/131.png",
+    awayLogo: "https://media.api-sports.io/football/teams/121.png",
 
     homeScore: 2,
     awayScore: 1,
@@ -20,11 +20,11 @@ const matches = [
   {
     id: 2,
     competition: "Copa do Brasil",
-    home: "Corinthians",
+    home: "São Paulo",
     away: "Santos",
 
-    homeLogo: "",
-    awayLogo: "",
+    homeLogo: "https://media.api-sports.io/football/teams/126.png",
+    awayLogo: "https://media.api-sports.io/football/teams/128.png",
 
     homeScore: 0,
     awayScore: 0,

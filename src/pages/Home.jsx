@@ -1,30 +1,55 @@
 import Header from "../components/navigation/Header";
-import BottomNav from "../components/navigation/BottomNav";
+import HomeHero from "../components/home/HomeHero";
 import SectionTitle from "../components/common/SectionTitle";
-import FilterTabs from "../components/common/FilterTabs";
-import DateSelector from "../components/common/DateSelector";
-import CompetitionSection from "../components/common/CompetitionSection";
+import DateSelector from "../components/home/DateSelector";
+import FilterTabs from "../components/home/FilterTabs";
+import CompetitionSection from "../components/home/CompetitionSection";
 import MatchCard from "../components/match/MatchCard";
-import groupMatches from "../utils/groupMatches";
+import BottomNav from "../components/navigation/BottomNav";
 
-import matches from "../data/matches";
+import { useEffect, useState } from "react";
+import { getLiveMatches } from "../services/footballApi"
+import groupMatches from "../utils/groupMatches";
+import mapMatches from "../utils/mapMatches";
+
 
 export default function Home() {
-  const brasileirao = matches.filter(
-    (match) => match.competition === "Brasileirão"
-  );
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const copaDoBrasil = matches.filter(
-    (match) => match.competition === "Copa do Brasil"
-  );
+  useEffect(() => {
+    async function loadMatches() {
+      const data = await getLiveMatches();
 
-  const groupedMatches = groupMatches(matches)
+      const formattedMatches = mapMatches(data);
+
+      setMatches(formattedMatches);
+
+      setLoading(false);
+    }
+
+    loadMatches();
+  }, []);
+
+  const groupedMatches = groupMatches(matches);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        Carregando partidas...
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-black text-white pb-24">
+    <main className="min-h-screen bg-zinc-950 text-white pb-24">
+
       <Header />
 
+      <HomeHero />
+
       <section className="px-5 mt-6">
+
         <SectionTitle
           title="🔥 Jogos ao Vivo"
           subtitle="Acompanhe todas as partidas do dia."
@@ -42,14 +67,16 @@ export default function Home() {
             {games.map((match) => (
               <MatchCard
                 key={match.id}
-                {...match}
+                match={match}
               />
             ))}
           </CompetitionSection>
         ))}
+
       </section>
 
       <BottomNav />
+
     </main>
   );
 }
