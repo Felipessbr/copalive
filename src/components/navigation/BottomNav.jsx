@@ -10,7 +10,7 @@ const links = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/95 px-4 py-3 backdrop-blur-md">
+    <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/25 px-4 py-3 backdrop-blur-md">
       {links.map((item) => {
         const Icon = item.icon
 

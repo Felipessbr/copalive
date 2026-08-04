@@ -1,4 +1,20 @@
 export default function mapMatches(apiMatches) {
+  const liveStatus = [
+    "LIVE",
+    "1H",
+    "HT",
+    "2H",
+    "ET",
+    "BT",
+    "P",
+  ];
+
+  const finishedStatus = [
+    "FT",
+    "AET",
+    "PEN",
+  ];
+
   return apiMatches.map((match) => ({
     id: match.fixture.id,
 
@@ -17,12 +33,11 @@ export default function mapMatches(apiMatches) {
       ? `${match.fixture.status.elapsed}'`
       : "-",
 
-    status:
-      match.fixture.status.short === "LIVE" ||
-      match.fixture.status.short === "1H" ||
-      match.fixture.status.short === "2H"
-        ? "AO VIVO"
-        : "ENCERRADO",
+    status: liveStatus.includes(match.fixture.status.short)
+      ? "AO VIVO"
+      : finishedStatus.includes(match.fixture.status.short)
+      ? "ENCERRADO"
+      : "AGENDADO",
 
     channel: "Em breve",
   }));

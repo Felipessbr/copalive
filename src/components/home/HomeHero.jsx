@@ -1,4 +1,6 @@
-export default function HomeHero() {
+export default function HomeHero({stats}) {
+  const { totalMatches, liveMatches, totalCompetitions } = stats;
+
   return (
     <section className="px-5 mt-6">
 
@@ -19,21 +21,21 @@ export default function HomeHero() {
         <div className="grid grid-cols-3 gap-3 mt-6">
 
           <div className="bg-zinc-800 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-lime-400">12</p>
+            <p className="text-2xl font-bold text-lime-400">{totalMatches}</p>
             <span className="text-xs text-zinc-400">
               Jogos
             </span>
           </div>
 
           <div className="bg-zinc-800 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-red-500">3</p>
+            <p className="text-2xl font-bold text-red-500">{liveMatches}</p>
             <span className="text-xs text-zinc-400">
               Ao Vivo
             </span>
           </div>
 
           <div className="bg-zinc-800 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">8</p>
+            <p className="text-2xl font-bold text-white">{totalCompetitions}</p>
             <span className="text-xs text-zinc-400">
               Ligas
             </span>

@@ -6,77 +6,77 @@ import FilterTabs from "../components/home/FilterTabs";
 import CompetitionSection from "../components/home/CompetitionSection";
 import MatchCard from "../components/match/MatchCard";
 import BottomNav from "../components/navigation/BottomNav";
-
-import { useEffect, useState } from "react";
-import { getLiveMatches } from "../services/footballApi"
-import groupMatches from "../utils/groupMatches";
-import mapMatches from "../utils/mapMatches";
-
+import useMatches from "../hooks/useMatches";
+import SkeletonCard from "../components/ui/SkeletonCard";
 
 export default function Home() {
-  const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadMatches() {
-      const data = await getLiveMatches();
-
-      const formattedMatches = mapMatches(data);
-
-      setMatches(formattedMatches);
-
-      setLoading(false);
-    }
-
-    loadMatches();
-  }, []);
-
-  const groupedMatches = groupMatches(matches);
+  const {
+    groupedMatches,
+    loading,
+    error,
+    stats,
+    filter,
+    setFilter,
+  } = useMatches();
 
   if (loading) {
+  return (
+    <main className="min-h-screen bg-zinc-950 p-5">
+      <SkeletonCard />
+      <SkeletonCard />
+      <SkeletonCard />
+    </main>
+  );
+}
+
+  if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
-        Carregando partidas...
+      <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-red-500">
+        {error}
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white pb-24">
+  <main className="min-h-screen bg-zinc-950 text-white pb-24">
 
-      <Header />
+    <Header />
 
-      <HomeHero />
+    <section className="px-5 mt-6">
 
-      <section className="px-5 mt-6">
+      <HomeHero stats={stats} />
 
-        <SectionTitle
-          title="🔥 Jogos ao Vivo"
-          subtitle="Acompanhe todas as partidas do dia."
-        />
+      <SectionTitle
+        title="🔥 Jogos"
+        subtitle="Acompanhe todas as partidas."
+      />
 
-        <DateSelector />
+      <DateSelector />
 
-        <FilterTabs />
+      <FilterTabs
+        filter={filter}
+        setFilter={setFilter}
+      />
 
-        {Object.entries(groupedMatches).map(([competition, games]) => (
-          <CompetitionSection
-            key={competition}
-            competition={competition}
-          >
-            {games.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-              />
-            ))}
-          </CompetitionSection>
-        ))}
+      {Object.entries(groupedMatches).map(([competition, games]) => (
+        <CompetitionSection
+          key={competition}
+          competition={competition}
+        >
+          {games.map((match) => (
+            <MatchCard
+              key={match.id}
+              {...match}
+            />
+          ))}
+        </CompetitionSection>
+      ))}
 
-      </section>
 
-      <BottomNav />
+    </section>
 
-    </main>
-  );
+    <BottomNav />
+
+  </main>
+);
 }

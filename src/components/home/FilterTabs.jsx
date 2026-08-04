@@ -1,23 +1,34 @@
-export default function FilterTabs() {
+export default function FilterTabs({ filter, setFilter }) {
+  const tabs = [
+    {
+      label: "Todos",
+      value: "ALL",
+    },
+    {
+      label: "Ao Vivo",
+      value: "LIVE",
+    },
+    {
+      label: "Finalizados",
+      value: "FINISHED",
+    },
+  ];
+
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-
-      <button className="bg-lime-500 text-black font-semibold px-4 py-2 rounded-full whitespace-nowrap">
-        Todos
-      </button>
-
-      <button className="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full whitespace-nowrap">
-        Ao Vivo
-      </button>
-
-      <button className="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full whitespace-nowrap">
-        Hoje
-      </button>
-
-      <button className="bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2 rounded-full whitespace-nowrap">
-        Finalizados
-      </button>
-
+    <div className="flex gap-3 overflow-x-auto mb-4 ">
+      {tabs.map((tab) => (
+        <button
+          key={tab.value}
+          onClick={() => setFilter(tab.value)}
+          className={`px-4 py-2 rounded-full transition ${
+            filter === tab.value
+              ? "bg-lime-500 text-black"
+              : "bg-zinc-900 text-white"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
-  )
+  );
 }

@@ -3,9 +3,9 @@ import logo from '../../assets/images/logo.png';
 
 export default function Header() {
     return (
-        <header className='flex items-center justify-around px-5 py-4 border-b border-zinc-900 ' >
+        <header className='h-15 flex items-center justify-around px-5 py-4 border-b border-zinc-900  sticky top-0 bg-black/25 backdrop-blur-md' >
 
-        <div className="w-25 h-15">
+        <div className="w-30">
             <img src={logo} alt="Logo do Site"  />
 
         </div>

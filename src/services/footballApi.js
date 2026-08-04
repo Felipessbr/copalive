@@ -1,13 +1,21 @@
 import api from "./api";
 import { ENDPOINTS } from "./endpoints";
 
-export async function getLiveMatches() {
-    try {
-        const response = await api.get(ENDPOINTS.LIVE)
+export async function getTodayMatches() {
+  try {
+    const today = new Date().toISOString().split("T")[0];
 
-        return response.data.response
-    } catch (error) {
-        console.log("Erro ao buscar partida:", error)
-        return [];
-    }
+    console.log("Data enviada:", today);
+
+    const response = await api.get(
+      `${ENDPOINTS.FIXTURES}?date=${today}`
+    );
+
+    console.log("Resposta completa:", response.data);
+
+    return response.data.response;
+  } catch (error) {
+    console.error(error.response?.data || error);
+    return [];
+  }
 }
