@@ -7,7 +7,7 @@ export default function ScoreBoard({
     return (
         <div className="flex flex-col items-center">
 
-                <h2 className="text-5xl font-black">
+                <h2 className="text-4xl font-black">
 
                     {homeScore}
 

@@ -1,5 +1,4 @@
 import Header from "../components/navigation/Header";
-import HomeHero from "../components/home/HomeHero";
 import SectionTitle from "../components/common/SectionTitle";
 import DateSelector from "../components/home/DateSelector";
 import FilterTabs from "../components/home/FilterTabs";
@@ -8,6 +7,8 @@ import MatchCard from "../components/match/MatchCard";
 import BottomNav from "../components/navigation/BottomNav";
 import useMatches from "../hooks/useMatches";
 import SkeletonCard from "../components/ui/SkeletonCard";
+import FeaturedCard from "../components/home/FeaturedCard";
+import FeaturedCarousel from "../components/home/FeaturedCarousel";
 
 export default function Home() {
   const {
@@ -20,14 +21,14 @@ export default function Home() {
   } = useMatches();
 
   if (loading) {
-  return (
-    <main className="min-h-screen bg-zinc-950 p-5">
-      <SkeletonCard />
-      <SkeletonCard />
-      <SkeletonCard />
-    </main>
-  );
-}
+    return (
+      <main className="min-h-screen bg-zinc-950 p-5">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </main>
+    );
+  }
 
   if (error) {
     return (
@@ -38,45 +39,45 @@ export default function Home() {
   }
 
   return (
-  <main className="min-h-screen bg-zinc-950 text-white pb-24">
+    <main className="min-h-screen bg-zinc-950 text-white pt-24 pb-24">
 
-    <Header />
+      <Header />
 
-    <section className="px-5 mt-6">
+      <section className="px-5 mt-6">
 
-      <HomeHero stats={stats} />
+     <FeaturedCarousel />
 
-      <SectionTitle
-        title="🔥 Jogos"
-        subtitle="Acompanhe todas as partidas."
-      />
+        <SectionTitle
+          title="🔥 Jogos"
+          subtitle="Acompanhe todas as partidas."
+        />
 
-      <DateSelector />
+        <DateSelector />
 
-      <FilterTabs
-        filter={filter}
-        setFilter={setFilter}
-      />
+        <FilterTabs
+          filter={filter}
+          setFilter={setFilter}
+        />
 
-      {Object.entries(groupedMatches).map(([competition, games]) => (
-        <CompetitionSection
-          key={competition}
-          competition={competition}
-        >
-          {games.map((match) => (
-            <MatchCard
-              key={match.id}
-              {...match}
-            />
-          ))}
-        </CompetitionSection>
-      ))}
+        {Object.entries(groupedMatches).map(([competition, games]) => (
+          <CompetitionSection
+            key={competition}
+            competition={competition}
+          >
+            {games.map((match) => (
+              <MatchCard
+                key={match.id}
+                {...match}
+              />
+            ))}
+          </CompetitionSection>
+        ))}
 
 
-    </section>
+      </section>
 
-    <BottomNav />
+      <BottomNav />
 
-  </main>
-);
+    </main>
+  );
 }
