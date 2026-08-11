@@ -25,13 +25,18 @@ export default function FeaturedCard({
                 <span
                     className={`
                             inline-flex
-                            items-center
-                            rounded-full
-                            px-3
-                            py-1
-                            mb-3
-                            text-xs
-                            font-bold
+                        items-center
+                        rounded-full
+                        bg-white/20
+                        backdrop-blur-md
+                        border
+                        border-white/20
+                        px-4
+                        py-1
+                        text-sm
+                        font-bold
+                        text-white
+                        mb-3
                             ${type === "news"
                             ? "bg-blue-500 text-white"
                             : "bg-lime-500 text-black"

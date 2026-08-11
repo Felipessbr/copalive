@@ -1,44 +1,65 @@
+const liveStatus = [
+  "LIVE",
+  "1H",
+  "HT",
+  "2H",
+  "ET",
+  "BT",
+  "P",
+];
+
+const finishedStatus = [
+  "FT",
+  "AET",
+  "PEN",
+];
 export default function mapMatches(apiMatches) {
-  const liveStatus = [
-    "LIVE",
-    "1H",
-    "HT",
-    "2H",
-    "ET",
-    "BT",
-    "P",
-  ];
 
-  const finishedStatus = [
-    "FT",
-    "AET",
-    "PEN",
-  ];
+  return apiMatches.map((match) => {
 
-  return apiMatches.map((match) => ({
-    id: match.fixture.id,
+    const shortStatus = match.fixture.status.short;
 
-    competition: match.league.name,
+    let status = "AGENDADO";
 
-    home: match.teams.home.name,
-    away: match.teams.away.name,
+    if (liveStatus.includes(shortStatus)) {
+      status = "AO VIVO";
+    } else if (finishedStatus.includes(shortStatus)) {
+      status = "ENCERRADO";
+    }
 
-    homeLogo: match.teams.home.logo,
-    awayLogo: match.teams.away.logo,
+    return {
 
-    homeScore: match.goals.home ?? 0,
-    awayScore: match.goals.away ?? 0,
+      id: match.fixture.id,
 
-    minute: match.fixture.status.elapsed
-      ? `${match.fixture.status.elapsed}'`
-      : "-",
+      competition: match.league.name,
 
-    status: liveStatus.includes(match.fixture.status.short)
-      ? "AO VIVO"
-      : finishedStatus.includes(match.fixture.status.short)
-      ? "ENCERRADO"
-      : "AGENDADO",
+      home: match.teams.home.name,
+      away: match.teams.away.name,
 
-    channel: "Em breve",
-  }));
+      homeId: match.teams.home.id,
+      awayId: match.teams.away.id,
+
+      homeLogo: match.teams.home.logo,
+      awayLogo: match.teams.away.logo,
+
+      homeScore: match.goals.home ?? 0,
+      awayScore: match.goals.away ?? 0,
+
+      minute: match.fixture.status.elapsed
+        ? `${match.fixture.status.elapsed}'`
+        : new Date(match.fixture.date).toLocaleTimeString(
+          "pt-BR",
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+
+      status,
+
+      channel: "Em breve",
+
+    };
+
+  });
 }

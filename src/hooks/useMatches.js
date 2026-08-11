@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { getMockMatches } from "../services/mockApi";
-import { getTodayMatches } from "../services/footballApi";
+import {
+  getTodayMatches,
+  getLiveMatches,
+  getFinishedMatches,
+} from "../services/footballApi";
+
 import mapMatches from "../utils/mapMatches";
 import groupMatches from "../utils/groupMatches";
 
@@ -13,33 +18,60 @@ export default function useMatches() {
   const [filter, setFilter] = useState("ALL");
 
   useEffect(() => {
-    async function loadMatches() {
-      try {
-        const DEV_DELAY = 1500;
-        if (DEV_DELAY > 0) {
-          await new Promise((resolve) => setTimeout(resolve, DEV_DELAY));
+  let firstLoad = true;
+
+  async function loadMatches() {
+    try {
+      if (firstLoad) {
+        setLoading(true);
+      }
+
+      let data = [];
+
+      if (USE_MOCK) {
+        data = await getMockMatches();
+      } else {
+        switch (filter) {
+          case "LIVE":
+            data = await getLiveMatches();
+            break;
+
+          case "FINISHED":
+            data = await getFinishedMatches();
+            break;
+
+          default:
+            data = await getTodayMatches();
         }
+      }
 
-        const data = USE_MOCK
-          ? await getMockMatches()
-          : await getTodayMatches();
+      const formattedMatches = USE_MOCK
+        ? data
+        : mapMatches(data);
 
-        const formattedMatches = USE_MOCK
-          ? data
-          : mapMatches(data);
-
-        setMatches(formattedMatches);
-      } catch (error) {
-        console.error(error);
-        setError("Ocorreu um erro ao carregar as partidas.");
-      } finally {
+      setMatches(formattedMatches);
+      setError(null);
+    } catch (error) {
+      console.error(error);
+      setError("Ocorreu um erro ao carregar as partidas.");
+    } finally {
+      if (firstLoad) {
         setLoading(false);
+        firstLoad = false;
       }
     }
+  }
 
+  loadMatches();
+
+  const interval = setInterval(() => {
     loadMatches();
-  }, []);
+  }, 60000);
 
+  return () => {
+    clearInterval(interval);
+  };
+}, [filter]);
   // Estatísticas
   const totalMatches = matches.length;
 
@@ -57,23 +89,12 @@ export default function useMatches() {
     totalCompetitions,
   };
 
-  // Filtro
-  const filteredMatches = matches.filter((match) => {
-    switch (filter) {
-      case "LIVE":
-        return match.status === "AO VIVO";
-
-      case "FINISHED":
-        return match.status === "ENCERRADO";
-
-      default:
-        return true;
-    }
-  });
-
   // Agrupamento
-  const groupedMatches = groupMatches(filteredMatches);
-  console.log(matches);
+  const sortedMatches = [...matches].sort((a, b) => {
+    const priority = { "AO VIVO": 1, "AGENDADO": 2, "ENCERRADO": 3 };
+    return priority[a.status] - priority[b.status];
+  });
+  const groupedMatches = groupMatches(sortedMatches);
 
   return {
     matches,
