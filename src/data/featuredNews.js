@@ -3,8 +3,8 @@ const featuredNews  = [
     {
         id: 1,
         type: "news",
-        title: "Memphis desembarca em São Paulo prestes a renovar contrato com o Corinthians",
-        subtitle: "O atacante Memphis Depay passa por exames médicos nesta terça-feira (4), etapa importante para a renovação de seu contrato com o Corinthians. Enquanto isso, o estafe do jogador e os departamentos financeiro e jurídico do clube seguem negociando os ajustes finais do novo vínculo.",
+        title: "Corinthians decide não renovar contrato de Memphis",
+        subtitle: "Depois de meses de negociação e retorno do atacante holandês ao Brasil, presidente Osmar Stabile desiste de renovação alegando responsabilidade financeira; camisa 10 não joga mais pelo clube",
         image:
             "https://www.meutimao.com.br/fotos-do-corinthians/w941/2026/05/27/memphis_depay_atuando_na_neo_quimica_arena_osx7.jpg",
         link: "#",

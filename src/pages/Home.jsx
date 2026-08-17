@@ -10,7 +10,23 @@ import SkeletonCard from "../components/ui/SkeletonCard";
 import FeaturedCard from "../components/home/FeaturedCard";
 import FeaturedCarousel from "../components/home/FeaturedCarousel";
 
+import { useState } from "react";
+
 export default function Home() {
+
+  function getToday() {
+    const date = new Date();
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  const [selectedDate, setSelectedDate] = useState(
+    getToday()
+  );
   const {
     groupedMatches,
     loading,
@@ -18,7 +34,7 @@ export default function Home() {
     stats,
     filter,
     setFilter,
-  } = useMatches();
+  } = useMatches(selectedDate);
 
   if (loading) {
     return (
@@ -45,14 +61,16 @@ export default function Home() {
 
       <section className="px-5 mt-6">
 
-     <FeaturedCarousel />
+        <FeaturedCarousel />
 
         <SectionTitle
           title="🔥 Jogos"
           subtitle="Acompanhe todas as partidas."
         />
-
-        <DateSelector />
+        <DateSelector
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+        />
 
         <FilterTabs
           filter={filter}

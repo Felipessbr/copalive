@@ -1,16 +1,15 @@
 import api from "./api";
 import { ENDPOINTS } from "./endpoints";
 
-export async function getTodayMatches() {
+export async function getMatchesByDate(date) {
   try {
-    const today = new Date().toISOString().split("T")[0];
-
-    console.log("Data enviada:", today);
-
     const response = await api.get(
-      `${ENDPOINTS.FIXTURES}?date=${today}`
+      `${ENDPOINTS.FIXTURES}?date=${date}`
     );
 
+    console.log("Data buscada:", date)
+    console.log("Partidas encontradas:", response.data.response)
+    
     return response.data.response;
   } catch (error) {
     console.error(error.response?.data || error);
@@ -29,8 +28,6 @@ export async function getLiveMatches() {
 }
  export async function getFinishedMatches(){
   try{
-
-    const today = new Date().toISOString().split("T")[0];
 
      const response = await api.get(
       `${ENDPOINTS.FIXTURES}?date=${today}`

@@ -13,10 +13,9 @@ const finishedStatus = [
   "AET",
   "PEN",
 ];
+
 export default function mapMatches(apiMatches) {
-
   return apiMatches.map((match) => {
-
     const shortStatus = match.fixture.status.short;
 
     let status = "AGENDADO";
@@ -27,8 +26,26 @@ export default function mapMatches(apiMatches) {
       status = "ENCERRADO";
     }
 
-    return {
+    const matchTime = new Date(
+      match.fixture.date
+    ).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
+    let minute = matchTime;
+
+    if (status === "AO VIVO") {
+      minute = match.fixture.status.elapsed
+        ? `${match.fixture.status.elapsed}'`
+        : "-";
+    }
+
+    if (status === "ENCERRADO") {
+      minute = "-";
+    }
+
+    return {
       id: match.fixture.id,
 
       competition: match.league.name,
@@ -45,21 +62,11 @@ export default function mapMatches(apiMatches) {
       homeScore: match.goals.home ?? 0,
       awayScore: match.goals.away ?? 0,
 
-      minute: match.fixture.status.elapsed
-        ? `${match.fixture.status.elapsed}'`
-        : new Date(match.fixture.date).toLocaleTimeString(
-          "pt-BR",
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-          }
-        ),
+      minute,
 
       status,
 
       channel: "Em breve",
-
     };
-
   });
 }
