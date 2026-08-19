@@ -7,23 +7,19 @@ import useFavorites from "../../hooks/useFavorites";
 import FavoriteButton from "../team/FavoriteButton";
 
 export default function MatchCard({
-  competition,
-
-  home,
-  away,
-
-  homeId,
-  awayId,
-
-  homeLogo,
-  awayLogo,
-
-  homeScore,
-  awayScore,
-
-  minute,
-  status,
-  channel,
+    competition,
+    home,
+    away,
+    homeLogo,
+    awayLogo,
+    homeScore,
+    awayScore,
+    minute,
+    time,
+    status,
+    channel,
+    awayId,
+    homeId,
 }) {
   const {
     toggleFavorite,
@@ -75,6 +71,7 @@ export default function MatchCard({
           homeScore={homeScore}
           awayScore={awayScore}
           minute={minute}
+          time={time}
         />
 
         {/* Visitante */}

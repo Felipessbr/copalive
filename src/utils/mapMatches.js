@@ -33,7 +33,8 @@ export default function mapMatches(apiMatches) {
       minute: "2-digit",
     });
 
-    let minute = matchTime;
+    let minute = null;
+    let time = null;
 
     if (status === "AO VIVO") {
       minute = match.fixture.status.elapsed
@@ -41,8 +42,8 @@ export default function mapMatches(apiMatches) {
         : "-";
     }
 
-    if (status === "ENCERRADO") {
-      minute = "-";
+    if (status === "AGENDADO") {
+      time = matchTime;
     }
 
     return {
@@ -63,6 +64,7 @@ export default function mapMatches(apiMatches) {
       awayScore: match.goals.away ?? 0,
 
       minute,
+      time,
 
       status,
 
