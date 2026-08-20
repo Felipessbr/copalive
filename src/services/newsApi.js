@@ -11,13 +11,12 @@ export async function getFootballNews() {
   try {
     const response = await newsApi.get("/search", {
       params: {
-        keywords: "soccer",
-        language: "en",
-        page_size: 10,
+        keywords: "futebol OR soccer",
+        language: "pt",
+        page_size: 5,
       },
     });
 
-    console.log("Notícias:", response.data);
 
     return response.data.news || [];
   } catch (error) {

@@ -63,10 +63,10 @@ export default function Home() {
 
         <FeaturedCarousel />
 
-        <SectionTitle
+        {/* <SectionTitle
           title="🔥 Jogos"
           subtitle="Acompanhe todas as partidas."
-        />
+        /> */}
         <DateSelector
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}

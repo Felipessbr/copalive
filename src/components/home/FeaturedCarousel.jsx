@@ -9,10 +9,11 @@ import "../../styles/swiper.css";
 
 import FeaturedCard from "./FeaturedCard";
 import useFeatured from "../../hooks/useFeatured";
+import useNews from './../../hooks/useNews';
 
 export default function FeaturedCarousel() {
 
-  const { featured, loading, error } = useFeatured();
+  const { news, loading, error } = useNews();
 
   if (loading) {
     return <FeaturedSkeleton />;
@@ -47,9 +48,10 @@ export default function FeaturedCarousel() {
     clickable: true,
   }}
 >
-  {featured.map((item) => (
+  {news.map((item) => (
     <SwiperSlide key={item.id}>
-      <FeaturedCard {...item} />
+      <FeaturedCard
+      {...item} />
     </SwiperSlide>
   ))}
 </Swiper>

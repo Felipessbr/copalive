@@ -3,17 +3,24 @@ export default function FeaturedCard({
     subtitle,
     image,
     type,
+    url,
 
 }) {
     return (
-        <article className="relative h-64 rounded-3xl overflow-hidden shadow-lg cursor-pointer group">
-            {/* imagem */}
+        <article
+        onClick={() => window.open(url, "_blank")}
+        className="relative h-64 rounded-3xl overflow-hidden shadow-lg cursor-pointer group">
 
-            <img
-                src={image}
-                alt={title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+            {/* imagem */}
+         {image ? (
+                <img
+                    src={image}
+                    alt={title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+            ) : (
+               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            )}
 
             {/* Orverlay */}
 
@@ -56,7 +63,6 @@ export default function FeaturedCard({
 
                 <div className="mt-5 flex items-center gap-2 text-lime-400 font-semibold">
                     <span>Ver detalhes</span>
-
                     <span>→</span>
                 </div>
             </div>
