@@ -49,6 +49,8 @@ export default function mapMatches(apiMatches) {
     return {
       id: match.fixture.id,
 
+      leagueId: match.league.id,
+
       competition: match.league.name,
 
       home: match.teams.home.name,

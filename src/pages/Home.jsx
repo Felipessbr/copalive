@@ -7,8 +7,8 @@ import MatchCard from "../components/match/MatchCard";
 import BottomNav from "../components/navigation/BottomNav";
 import useMatches from "../hooks/useMatches";
 import SkeletonCard from "../components/ui/SkeletonCard";
-import FeaturedCard from "../components/home/FeaturedCard";
 import FeaturedCarousel from "../components/home/FeaturedCarousel";
+import LeagueFilter from "../components/home/LeagueFilter";
 
 import { useState } from "react";
 
@@ -24,17 +24,36 @@ export default function Home() {
     return `${year}-${month}-${day}`;
   }
 
+
+  const leagues = [
+    { id: 71, name: "Brasileirão" },
+    { id: 39, name: "Premier League" },
+    { id: 140, name: "La Liga" },
+    { id: 135, name: "Serie A" },
+    { id: 78, name: "Bundesliga" },
+    { id: 2, name: "Champions League" },
+    { id: 13, name: "Libertadores" },
+  ];
+
   const [selectedDate, setSelectedDate] = useState(
     getToday()
   );
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedLeague, setSelectedLeague] = useState(null);
+
+
   const {
     groupedMatches,
     loading,
     error,
-    stats,
     filter,
     setFilter,
-  } = useMatches(selectedDate);
+  } = useMatches(selectedDate, selectedLeague);
+
+  const selectedLeagueName = leagues.find(
+    (league) => league.id === selectedLeague
+  )?.name;
 
   if (loading) {
     return (
@@ -63,10 +82,15 @@ export default function Home() {
 
         <FeaturedCarousel />
 
-        {/* <SectionTitle
-          title="🔥 Jogos"
-          subtitle="Acompanhe todas as partidas."
-        /> */}
+        <SectionTitle
+          title="⚡ Jogos"
+          subtitle={
+            selectedLeagueName
+              ? `Explorar ${selectedLeagueName}`
+              : "Explorar eventos de hoje"
+          }
+          onFilter={() => setShowFilters(true)}
+        />
         <DateSelector
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
@@ -95,6 +119,17 @@ export default function Home() {
       </section>
 
       <BottomNav />
+
+      {showFilters && (
+        <LeagueFilter
+          selectedLeague={selectedLeague}
+          onLeagueChange={(leagueId) => {
+            setSelectedLeague(leagueId);
+            setShowFilters(false);
+          }}
+          onClose={() => setShowFilters(false)}
+        />
+      )}
 
     </main>
   );

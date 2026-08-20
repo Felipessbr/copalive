@@ -5,7 +5,7 @@ import { getMatchesByDate } from "../services/footballApi";
 import mapMatches from "../utils/mapMatches";
 import groupMatches from "../utils/groupMatches";
 
-export default function useMatches(selectedDate) {
+export default function useMatches(selectedDate, selectedLeague) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,6 +51,11 @@ export default function useMatches(selectedDate) {
   // FILTRO DE STATUS
 
   const filteredMatches = matches.filter((match) => {
+
+    if (selectedLeague !== null && match.leagueId !== selectedLeague) {
+      return false
+    }
+
     switch (filter) {
       case "LIVE":
         return match.status === "AO VIVO";
@@ -94,7 +99,6 @@ export default function useMatches(selectedDate) {
   const totalCompetitions = Object.keys(
     groupMatches(matches)
   ).length;
-
   const stats = {
     totalMatches,
     liveMatches,
