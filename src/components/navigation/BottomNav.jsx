@@ -8,9 +8,15 @@ const links = [
   { name: 'Perfil', path: '/profile', icon: User },
 ]
 
-export default function BottomNav() {
+export default function BottomNav( {scrollDirection} ) {
   return (
-    <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/25 px-4 py-3 backdrop-blur-md">
+    <nav className={`fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/25 px-4 py-3 backdrop-blur-md transition-transform duration-300
+    ${
+      scrollDirection === "down"
+      ? "translate-y-full"
+      : "translate-y-0"
+    }
+    `}>
       {links.map((item) => {
         const Icon = item.icon
 

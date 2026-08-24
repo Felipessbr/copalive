@@ -10,9 +10,15 @@ import SkeletonCard from "../components/ui/SkeletonCard";
 import FeaturedCarousel from "../components/home/FeaturedCarousel";
 import LeagueFilter from "../components/home/LeagueFilter";
 
+import useScrollDirection from "../hooks/useScrollDirection";
+
+import { leagues } from "../components/constants/leagues";
 import { useState } from "react";
 
 export default function Home() {
+
+  const scrollDirection = useScrollDirection();
+  console.log(scrollDirection)
 
   function getToday() {
     const date = new Date();
@@ -23,17 +29,6 @@ export default function Home() {
 
     return `${year}-${month}-${day}`;
   }
-
-
-  const leagues = [
-    { id: 71, name: "Brasileirão" },
-    { id: 39, name: "Premier League" },
-    { id: 140, name: "La Liga" },
-    { id: 135, name: "Serie A" },
-    { id: 78, name: "Bundesliga" },
-    { id: 2, name: "Champions League" },
-    { id: 13, name: "Libertadores" },
-  ];
 
   const [selectedDate, setSelectedDate] = useState(
     getToday()
@@ -76,7 +71,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white pt-24 pb-24">
 
-      <Header />
+      <Header scrollDirection={scrollDirection} />
 
       <section className="px-5 mt-6">
 
@@ -118,7 +113,7 @@ export default function Home() {
 
       </section>
 
-      <BottomNav />
+      <BottomNav scrollDirection={scrollDirection} />
 
       {showFilters && (
         <LeagueFilter
