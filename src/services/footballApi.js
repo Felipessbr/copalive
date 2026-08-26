@@ -29,7 +29,7 @@ export async function getMatchesByDate(date) {
   }
 }
 export async function getLiveMatches() {
-  try{
+  try {
     const response = await api.get(ENDPOINTS.LIVE);
     return response.data.response
   } catch (error) {
@@ -37,22 +37,40 @@ export async function getLiveMatches() {
     return [];
   }
 }
- export async function getFinishedMatches(){
-  try{
+export async function getFinishedMatches() {
+  try {
 
-     const response = await api.get(
+    const response = await api.get(
       `${ENDPOINTS.FIXTURES}?date=${today}`
     );
 
-     return response.data.response.filter(
+    return response.data.response.filter(
       (match) =>
         match.fixture.status.short === "FT" ||
         match.fixture.status.short === "AET" ||
         match.fixture.status.short === "PEN"
     );
-    
-  }catch (error) {
+
+  } catch (error) {
     console.error(error.response?.data || error);
     return [];
- }
+  }
+}
+
+export async function getLeagues() {
+  try {
+    const response = await api.get(ENDPOINTS.LEAGUES);
+
+    console.log("Ligas encontradas:", response.data.response);
+
+    return response.data.response;
+
+  } catch (error) {
+    console.error(
+      "Erro ao buscar ligas:",
+      error.response?.data || error
+    );
+
+    return [];
+  }
 }
