@@ -74,3 +74,18 @@ export async function getLeagues() {
     return [];
   }
 }
+
+export async function getLeagueById(id) {
+  try {
+    const response = await api.get(`${ENDPOINTS.LEAGUES}?id=${id}`);
+
+    console.log('Liga buscada:', id)
+    console.log("Dados da liga:", response.data.response);
+
+    return response.data.response;
+
+  } catch (error) {
+    console.error('Erro ao buscar liga:', error.response?.data || error);
+    return [];
+  }
+}
