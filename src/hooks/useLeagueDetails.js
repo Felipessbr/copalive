@@ -25,6 +25,7 @@ export default function useLeagueDetails(id) {
                     name: leagueData.league.name,
                     logo: leagueData.league.logo,
                     country: leagueData.country.name,
+                    seasons: leagueData.seasons,
                 });
 
                 setError(null);

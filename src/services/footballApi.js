@@ -89,3 +89,17 @@ export async function getLeagueById(id) {
     return [];
   }
 }
+
+export async function getLeagueStandings(leagueId, season) {
+
+    const response = await api.get("/standings", {
+        params: {
+            league: leagueId,
+            season: season
+        }
+    });
+
+    console.log("Resposta BRUTA da API standings:", response.data);
+
+    return response.data.response;
+}
