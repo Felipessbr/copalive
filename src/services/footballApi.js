@@ -92,14 +92,34 @@ export async function getLeagueById(id) {
 
 export async function getLeagueStandings(leagueId, season) {
 
-    const response = await api.get("/standings", {
-        params: {
-            league: leagueId,
-            season: season
-        }
-    });
+  const response = await api.get("/standings", {
+    params: {
+      league: leagueId,
+      season: season
+    }
+  });
 
-    console.log("Resposta BRUTA da API standings:", response.data);
+  console.log("Resposta BRUTA da API standings:", response.data);
 
-    return response.data.response;
+  return response.data.response;
+}
+
+export async function getLeagueMatches(leagueId, season) {
+  try {
+    const resposne = await api.get(ENDPOINTS.FIXTURES, {
+      params: {
+        league: leagueId,
+        season: season,
+      },
+    })
+
+    console.log("Resposta da API fixture:", resposne.data.response);
+    return resposne.data.response;
+
+  } catch (error) {
+    console.error("Error ao buscar liga:", error.response?.data || error);
+
+    return [];
+  }
+
 }

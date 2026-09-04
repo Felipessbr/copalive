@@ -47,6 +47,10 @@ export default function Leagues() {
         );
     });
 
+    const handleLeagueClick = (league) => {
+            navigate(`/leagues/${league.id}`); 
+    }
+
     return (
         <main className="min-h-screen bg-zinc-950 text-white pt-24 pb-24">
 
@@ -96,8 +100,9 @@ export default function Leagues() {
 
                             myLeagues.map((league) => (
 
-                                <div
+                                <button
                                     key={league.id}
+                                    onClick={() => handleLeagueClick(league)}
                                     className="min-w-[120px] rounded-xl border border-zinc-900 bg-zinc-900 p-4"
                                 >
 
@@ -109,7 +114,7 @@ export default function Leagues() {
                                     </div>
 
                                     {/* LOGO */}
-                                    <div className="flex h-10 items-center justify-center">
+                                    <div className="flex items-center justify-center">
                                         <img
                                             src={league.logo}
                                             alt={league.name}
@@ -122,7 +127,7 @@ export default function Leagues() {
                                         {league.name}
                                     </p>
 
-                                </div>
+                                </button>
 
                             ))
 
