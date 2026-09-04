@@ -1,12 +1,20 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import {
+  ShieldCheckIcon,
+  ChartBarIcon,
+  FireIcon,
+} from "@heroicons/react/24/outline";
+
 import useLeagueDetails from "../hooks/useLeagueDetails";
 import useLeagueStandings from "../hooks/useLeagueStandings";
 import useLeagueMatches from "../hooks/useLeagueMatches";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
 
 import leagueMatches from "../data/leagueMatches";
+import leagueStatistics from "../data/leagueStatistics";
+import api from './../services/api';
 
 function getPositionStyle(standing) {
   const description = standing.description?.toLowerCase() || "";
@@ -177,9 +185,8 @@ export default function LeagueDetails() {
               {/* CLASSIFICAÇÃO */}
               <button
                 onClick={() => setActiveTab("classification")}
-                className={`relative flex-1 py-4 text-xs font-bold transition ${
-                  activeTab === "classification" ? "text-lime-400" : "text-zinc-500"
-                }`}
+                className={`relative flex-1 py-4 text-xs font-bold transition ${activeTab === "classification" ? "text-lime-400" : "text-zinc-500"
+                  }`}
               >
                 CLASSIFICAÇÃO
                 {activeTab === "classification" && (
@@ -190,9 +197,8 @@ export default function LeagueDetails() {
               {/* JOGOS */}
               <button
                 onClick={() => setActiveTab("matches")}
-                className={`relative flex-1 py-4 text-xs font-bold transition ${
-                  activeTab === "matches" ? "text-lime-400" : "text-zinc-500"
-                }`}
+                className={`relative flex-1 py-4 text-xs font-bold transition ${activeTab === "matches" ? "text-lime-400" : "text-zinc-500"
+                  }`}
               >
                 JOGOS
                 {activeTab === "matches" && (
@@ -203,9 +209,8 @@ export default function LeagueDetails() {
               {/* ESTATÍSTICAS */}
               <button
                 onClick={() => setActiveTab("statistics")}
-                className={`relative flex-1 py-4 text-xs font-bold transition ${
-                  activeTab === "statistics" ? "text-lime-400" : "text-zinc-500"
-                }`}
+                className={`relative flex-1 py-4 text-xs font-bold transition ${activeTab === "statistics" ? "text-lime-400" : "text-zinc-500"
+                  }`}
               >
                 ESTATÍSTICAS
                 {activeTab === "statistics" && (
@@ -287,13 +292,12 @@ export default function LeagueDetails() {
                             <span className="w-7 text-zinc-300">{standing.all.lose}</span>
 
                             <span
-                              className={`w-8 font-semibold ${
-                                standing.goalsDiff > 0
-                                  ? "text-lime-400"
-                                  : standing.goalsDiff < 0
+                              className={`w-8 font-semibold ${standing.goalsDiff > 0
+                                ? "text-lime-400"
+                                : standing.goalsDiff < 0
                                   ? "text-red-400"
                                   : "text-zinc-400"
-                              }`}
+                                }`}
                             >
                               {standing.goalsDiff > 0 ? `+${standing.goalsDiff}` : standing.goalsDiff}
                             </span>
@@ -375,11 +379,10 @@ export default function LeagueDetails() {
                             </span>
 
                             <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
-                                match.status === "ENCERRADO"
-                                  ? "bg-zinc-800 text-zinc-400"
-                                  : "bg-lime-400/10 text-lime-400"
-                              }`}
+                              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${match.status === "ENCERRADO"
+                                ? "bg-zinc-800 text-zinc-400"
+                                : "bg-lime-400/10 text-lime-400"
+                                }`}
                             >
                               {match.status}
                             </span>
@@ -422,15 +425,164 @@ export default function LeagueDetails() {
               </div>
             )}
 
-            {/* ========================================
-                ESTATÍSTICAS
-            ======================================== */}
+            {/* ESTATÍSTICAS*/}
+
             {activeTab === "statistics" && (
               <div>
-                <h2 className="mb-4 text-lg font-bold">Estatísticas</h2>
 
-                <div className="rounded-xl bg-zinc-900 p-5">
-                  <p className="text-sm text-zinc-400">Estatísticas da competição aparecerão aqui.</p>
+                {/* TITULO */}
+
+                <div className="mb-5">
+                  <h2>Estatísticas</h2>
+
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Temporada {leagueStatistics.season}
+                  </p>
+
+                </div>
+
+                {/* RESUMO*/}
+
+                <div className="grid grid-cols-2 gap-3">
+
+                  {/* MÉDIAS DE GOLS */}
+
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+
+                    <div className="flex items-center justify-between">
+
+                      <span className="text-[10px] font-bold uppercase 
+                      text-zinc-400">
+                        Média de gols
+                      </span>
+
+                      <ChartBarIcon className="text-lime-400 h-4 w-4" />
+                    </div>
+
+                    <div className="mt-3">
+
+                      <span className="text-sm font-bold text-white text-[20px]">
+                        {leagueStatistics.summary.averageGoals.toFixed(2)}
+                      </span>
+
+                      <span className="ml-1 text-[9px] font-bold text-lime-400">
+                        gols / jogo
+                      </span>
+
+                    </div>
+
+                    <p className="mt-1 text-[10px] text-zinc-500">
+                      {leagueStatistics.summary.totalGoals} gols em {" "}{leagueStatistics.summary.totalMatches} partidas
+                    </p>
+
+                  </div>
+
+                  {/* MELHOR ATAQUE */}
+
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+
+                    <div className="flex items-center justify-between">
+
+                      <span className="text-[10px] font-bold uppercase 
+                      text-zinc-400">
+                        Melhor ataque
+                      </span>
+
+                      <FireIcon className="text-lime-400 h-4 w-4" />
+                    </div>
+
+                    <div className="mt-3">
+
+                      <span className="text-sm font-bold text-white text-[20px]">
+                        {leagueStatistics.summary.bestAttack.value}
+                      </span>
+
+                      <span className="ml-1 text-[9px] font-bold text-lime-400">
+                        {leagueStatistics.summary.bestAttack.team}
+                      </span>
+
+                    </div>
+
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800 ">
+                      <div
+                        className="h-full rounded-full bg-lime-400"
+                        style={{
+                          width: "85%",
+                        }}
+                      />
+                    </div>
+
+                  </div>
+
+                  {/* MELHOR DEFESA */}
+
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+
+                    <div className="flex items-center justify-between">
+
+                      <span className="text-[10px] font-bold uppercase 
+                      text-zinc-400">
+                        Melhor defesa
+                      </span>
+
+                      <ShieldCheckIcon className="text-lime-400 h-4 w-4" />
+                    </div>
+
+                    <div className="mt-3">
+
+                      <span className="text-sm font-bold text-white text-[20px]">
+                        {leagueStatistics.summary.bestDefense.value}
+                      </span>
+
+                      <span className="ml-1 text-[9px] font-bold text-lime-400">
+                        {leagueStatistics.summary.bestDefense.team}
+                      </span>
+
+                    </div>
+
+                    <p className="mt-1 text-[10px] text-zinc-500">
+                      Apenas {leagueStatistics.summary.bestDefense.media} {" "}
+                      {leagueStatistics.summary.bestDefense.label}
+                    </p>
+
+                  </div>
+
+                  {/* DISCIPLINA */}
+                  
+                  <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+
+                    <div className="flex items-center justify-between">
+
+                      <span className="text-[10px] font-bold uppercase 
+                      text-zinc-400">
+                        disciplina
+                      </span>
+
+                      <span>
+                        🟨🟥
+                      </span>
+
+                    </div>
+
+                    <div className="mt-3">
+
+                      <span className="text-sm font-bold text-white text-[20px]">
+                        {leagueStatistics.summary.discipline.averageCards}
+                      </span>
+
+                      <span className="ml-1 text-[9px] font-bold text-lime-400">
+                        {leagueStatistics.summary.discipline.label}
+                      </span>
+
+                    </div>
+
+                    <p className="mt-1 text-[10px] text-zinc-500">
+                      {leagueStatistics.summary.discipline.yellowCards} amarelo . {" "}
+                      {leagueStatistics.summary.discipline.redCards} vermelho
+                    </p>
+
+                  </div>
+
                 </div>
               </div>
             )}
