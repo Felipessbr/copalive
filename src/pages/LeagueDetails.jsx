@@ -15,6 +15,7 @@ import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
 import leagueMatches from "../data/leagueMatches";
 import leagueStatistics from "../data/leagueStatistics";
 import api from './../services/api';
+import { TrophyIcon } from "lucide-react";
 
 function getPositionStyle(standing) {
   const description = standing.description?.toLowerCase() || "";
@@ -90,17 +91,15 @@ export default function LeagueDetails() {
     error: matchesError,
   } = useLeagueMatches(id, 2024);
 
-  // ========================================
   // MOCK DOS JOGOS
   // Usado enquanto a API está sem cota
-  // ========================================
+
   const displayedMatches = leagueMatches;
 
   console.log("Jogos da liga 2024:", matches);
 
-  // ========================================
   // QUALIFICAÇÕES
-  // ========================================
+
   const qualifications = [
     ...new Map(
       standings
@@ -115,9 +114,8 @@ export default function LeagueDetails() {
 
   console.log("Classificação:", standings);
 
-  // ========================================
   // LOADING DA LIGA
-  // ========================================
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
@@ -126,7 +124,6 @@ export default function LeagueDetails() {
     );
   }
 
-  // ========================================
   // ERRO DA LIGA
   // ========================================
   if (error) {
@@ -177,9 +174,7 @@ export default function LeagueDetails() {
             </div>
           </div>
 
-          {/* ========================================
-              TABS
-          ======================================== */}
+          {/* TABS */}
           <div className="border-b border-zinc-800 bg-zinc-950">
             <div className="flex">
               {/* CLASSIFICAÇÃO */}
@@ -220,13 +215,9 @@ export default function LeagueDetails() {
             </div>
           </div>
 
-          {/* ========================================
-              CONTEÚDO
-          ======================================== */}
+          {/*  CONTEÚDO */}
           <section className="p-5">
-            {/* ========================================
-                CLASSIFICAÇÃO
-            ======================================== */}
+            {/* CLASSIFICAÇÃO */}
             {activeTab === "classification" && (
               <div>
                 <h2 className="mb-4 text-lg font-bold">Classificação</h2>
@@ -341,9 +332,7 @@ export default function LeagueDetails() {
               </div>
             )}
 
-            {/* ========================================
-                JOGOS
-            ======================================== */}
+            {/* JOGOS */}
             {activeTab === "matches" && (
               <div>
                 <div className="mb-5">
@@ -548,7 +537,7 @@ export default function LeagueDetails() {
                   </div>
 
                   {/* DISCIPLINA */}
-                  
+
                   <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
 
                     <div className="flex items-center justify-between">
@@ -587,6 +576,56 @@ export default function LeagueDetails() {
               </div>
             )}
           </section>
+          {/* ARTILHARIA */}
+          <div className="mt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <TrophyIcon className="w-5 h-5 text-yellow-500" />
+
+              <h3 className="text-lg font-bold text-white">
+                Artilharia
+              </h3>
+            </div>
+
+            <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+              {leagueStatistics.topScorers.map((player, index) => (
+                <div
+                  key={player.name}
+                  className="flex items-center justify-between px-4 py-4 border-b border-zinc-800 last:border-b-0"
+                >
+                  <div className="flex items-center gap-2">
+                    {/* posição */}
+                    <span className="w-4  font-semibold text-zinc-500 ">
+                      {index + 1}
+                    </span>
+
+                    {/* jogador */}
+                    <div className="text-sm font-semibold text-white">
+
+                      <h1>
+                        {player.name}
+                      </h1>
+
+                      <p>
+                        {player.team}{" • "}{player.pos}
+                      </p>
+
+                    </div>
+                  </div>
+
+                  {/* gols */}
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-white">
+                      {player.goals}
+                    </span>
+
+                    <span className="ml-1 text-xs text-zinc-500">
+                      gols
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       )}
     </main>

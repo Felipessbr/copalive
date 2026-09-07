@@ -28,44 +28,40 @@ const leagueStatistics = {
             redCards: 56,
         },
     },
-
-    topScorers: [
-        {
-            position: 1,
-            player: "G. Barbosa",
-            team: "Flamengo",
-            teamLogo:
-                "https://media.api-sports.io/football/teams/127.png",
-            goals: 16,
-        },
-
-        {
-            position: 2,
-            player: "Yuri Alberto",
-            team: "Corinthians",
-            teamLogo:
-                "https://media.api-sports.io/football/teams/131.png",
-            goals: 14,
-        },
-
-        {
-            position: 3,
-            player: "Hulk",
-            team: "Atlético-MG",
-            teamLogo:
-                "https://media.api-sports.io/football/teams/1062.png",
-            goals: 13,
-        },
-
-        {
-            position: 4,
-            player: "Flaco López",
-            team: "Palmeiras",
-            teamLogo:
-                "https://media.api-sports.io/football/teams/121.png",
-            goals: 11,
-        },
-    ],
+topScorers: [
+    {
+        position: 1,
+        pos: "atacante",
+        name: "G. Barbosa",
+        team: "Flamengo",
+        teamLogo: "https://media.api-sports.io/football/teams/127.png",
+        goals: 16,
+    },
+    {
+        position: 2,
+        pos: "atacante",
+        name: "Yuri Alberto",
+        team: "Corinthians",
+        teamLogo: "https://media.api-sports.io/football/teams/131.png",
+        goals: 14,
+    },
+    {
+        position: 3,
+        pos: "atacante",
+        name: "Hulk",
+        team: "Atlético-MG",
+        teamLogo: "https://media.api-sports.io/football/teams/1062.png",
+        goals: 13,
+    },
+    {
+        position: 4,
+        pos: "atacante",
+        name: "Flaco López",
+        team: "Palmeiras",
+        teamLogo: "https://media.api-sports.io/football/teams/121.png",
+        goals: 11,
+    },
+],
 
     assists: [
         {
