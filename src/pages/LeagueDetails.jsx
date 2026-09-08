@@ -573,59 +573,95 @@ export default function LeagueDetails() {
                   </div>
 
                 </div>
+
+                {/* ARTILHARIA */}
+                <div className="mt-6">
+                  {/* Cabeçalho */}
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrophyIcon className="h-5 w-5 text-lime-400" />
+
+                      <h3 className="text-lg font-bold text-white">
+                        Artilharia
+                      </h3>
+                    </div>
+
+                    <span className="text-xs font-bold text-lime-400">
+                      Temporada {leagueStatistics.season.toString().slice(-2)}
+                    </span>
+                  </div>
+
+                  {/* Card */}
+                  <div className="overflow-hidden rounded-2xl bg-zinc-900 px-4">
+                    {leagueStatistics.topScorers.map((player, index) => {
+                      const maxGoals = leagueStatistics.topScorers[0].goals;
+                      const progress = (player.goals / maxGoals) * 100;
+
+                      return (
+                        <div
+                          key={player.name}
+                          className="border-b border-zinc-800 py-5 last:border-b-0"
+                        >
+                          {/* Informações do jogador */}
+                          <div className="flex items-center justify-between">
+                            {/* Esquerda */}
+                            <div className="flex min-w-0 items-center gap-3">
+                              {/* posição */}
+                              <span className="w-5 shrink-0 text-center text-sm font-bold text-lime-400">
+                                {player.position}
+                              </span>
+
+                              {/* foto */}
+                              <img
+                                src={player.playerPhoto}
+                                alt={player.name}
+                                className="h-10 w-10 shrink-0 rounded-full object-cover"
+                              />
+
+                              {/* jogador */}
+                              <div className="min-w-0">
+                                <h4 className="truncate text-sm font-bold text-white">
+                                  {player.name}
+                                </h4>
+
+                                <p className="text-xs font-semibold text-zinc-400">
+                                  {player.team} • {player.pos}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Gols */}
+                            <div className="ml-3 shrink-0 text-right">
+                              <span className="block text-2xl font-bold leading-none text-lime-400">
+                                {player.goals}
+                              </span>
+
+                              <span className="text-[11px] text-zinc-400">
+                                gols
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Barra de progresso */}
+                          <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${index === 0 ? "bg-lime-400" : "bg-zinc-700"
+                                }`}
+                              style={{
+                                width: `${progress}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
             )}
           </section>
-          {/* ARTILHARIA */}
-          <div className="mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <TrophyIcon className="w-5 h-5 text-yellow-500" />
 
-              <h3 className="text-lg font-bold text-white">
-                Artilharia
-              </h3>
-            </div>
-
-            <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
-              {leagueStatistics.topScorers.map((player, index) => (
-                <div
-                  key={player.name}
-                  className="flex items-center justify-between px-4 py-4 border-b border-zinc-800 last:border-b-0"
-                >
-                  <div className="flex items-center gap-2">
-                    {/* posição */}
-                    <span className="w-4  font-semibold text-zinc-500 ">
-                      {index + 1}
-                    </span>
-
-                    {/* jogador */}
-                    <div className="text-sm font-semibold text-white">
-
-                      <h1>
-                        {player.name}
-                      </h1>
-
-                      <p>
-                        {player.team}{" • "}{player.pos}
-                      </p>
-
-                    </div>
-                  </div>
-
-                  {/* gols */}
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-white">
-                      {player.goals}
-                    </span>
-
-                    <span className="ml-1 text-xs text-zinc-500">
-                      gols
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
       )}
     </main>
