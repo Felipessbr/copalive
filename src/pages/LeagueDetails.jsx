@@ -441,7 +441,7 @@ export default function LeagueDetails() {
                     <div className="flex items-center justify-between">
 
                       <span className="text-[10px] font-bold uppercase 
-                      text-zinc-400">
+                      text-lime-100/70">
                         Média de gols
                       </span>
 
@@ -460,7 +460,7 @@ export default function LeagueDetails() {
 
                     </div>
 
-                    <p className="mt-1 text-[10px] text-zinc-500">
+                    <p className="mt-1 text-[10px] text-lime-100/70">
                       {leagueStatistics.summary.totalGoals} gols em {" "}{leagueStatistics.summary.totalMatches} partidas
                     </p>
 
@@ -473,7 +473,7 @@ export default function LeagueDetails() {
                     <div className="flex items-center justify-between">
 
                       <span className="text-[10px] font-bold uppercase 
-                      text-zinc-400">
+                      text-lime-100/70">
                         Melhor ataque
                       </span>
 
@@ -510,7 +510,7 @@ export default function LeagueDetails() {
                     <div className="flex items-center justify-between">
 
                       <span className="text-[10px] font-bold uppercase 
-                      text-zinc-400">
+                      text-lime-100/70">
                         Melhor defesa
                       </span>
 
@@ -529,7 +529,7 @@ export default function LeagueDetails() {
 
                     </div>
 
-                    <p className="mt-1 text-[10px] text-zinc-500">
+                    <p className="mt-1 text-[10px] text-lime-100/70">
                       Apenas {leagueStatistics.summary.bestDefense.media} {" "}
                       {leagueStatistics.summary.bestDefense.label}
                     </p>
@@ -543,9 +543,9 @@ export default function LeagueDetails() {
                     <div className="flex items-center justify-between">
 
                       <span className="text-[10px] font-bold uppercase 
-                      text-zinc-400">
+                      text-lime-100/70">
                         disciplina
-                      </span>
+                        </span>
 
                       <span>
                         🟨🟥
@@ -565,7 +565,7 @@ export default function LeagueDetails() {
 
                     </div>
 
-                    <p className="mt-1 text-[10px] text-zinc-500">
+                    <p className="mt-1 text-[10px] text-lime-100/70">
                       {leagueStatistics.summary.discipline.yellowCards} amarelo . {" "}
                       {leagueStatistics.summary.discipline.redCards} vermelho
                     </p>
@@ -624,7 +624,7 @@ export default function LeagueDetails() {
                                   {player.name}
                                 </h4>
 
-                                <p className="text-xs font-semibold text-zinc-400">
+                                <p className="text-xs font-semibold text-lime-100/70">
                                   {player.team} • {player.pos}
                                 </p>
                               </div>
@@ -632,11 +632,15 @@ export default function LeagueDetails() {
 
                             {/* Gols */}
                             <div className="ml-3 shrink-0 text-right">
-                              <span className="block text-2xl font-bold leading-none text-lime-400">
+                              <span c className={`text-2xl font-bold ${player.position === 1
+                                  ? "text-lime-400"
+                                  : "text-white"
+                                }`}
+                            >
                                 {player.goals}
                               </span>
 
-                              <span className="text-[11px] text-zinc-400">
+                              <span className="text-[11px] text-lime-100/70">
                                 gols
                               </span>
                             </div>
@@ -657,6 +661,164 @@ export default function LeagueDetails() {
                     })}
                   </div>
                 </div>
+
+                {/* LÍDERES DE GARÇOM & DEFESA */}
+                <div className="mt-6">
+                  {/* Título da seção */}
+                  <div className="mb-4">
+                    <h1 className="text-lg font-bold text-white">
+                      Líderes de Garçom & Defesa
+                    </h1>
+                  </div>
+
+                  {/* Card de assistências */}
+                  <div className="overflow-hidden rounded-2xl bg-zinc-900 px-4 py-4">
+
+                    {/* Cabeçalho */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl text-lime-400">
+                          🤝
+                        </span>
+
+                        <h2 className="text-lg font-bold text-white">
+                          Mais Assistências
+                        </h2>
+                      </div>
+
+                      <span className="text-sm font-medium text-zinc-300">
+                        Passes decisivos
+                      </span>
+                    </div>
+
+                    {/* Jogadores */}
+                    <div className="space-y-4">
+                      {leagueStatistics.assists.map((player) => (
+                        <div
+                          key={player.name}
+                          className="flex items-center justify-between rounded-2xl bg-zinc-950/12 px-4 py-5"
+                        >
+                          {/* Jogador */}
+                          <div className="flex items-center gap-4">
+
+                            {/* Posição */}
+                            <span
+                              className={`w-5 text-center text-lg font-bold ${player.position === 1
+                                  ? "text-lime-400"
+                                  : "text-zinc-300"
+                                }`}
+                            >
+                              #{player.position}
+                            </span>
+
+                            {/* Informações */}
+                            <div>
+                              <h3 className="text-[18px] font-semibold text-white">
+                                {player.name}
+                              </h3>
+
+                              <p className="mt-1 text-sm font-medium text-zinc-300">
+                                {player.team}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Assistências */}
+                          <div className="flex items-baseline gap-1">
+                            <span
+                              className={`text-2xl font-bold ${player.position === 1
+                                  ? "text-lime-400"
+                                  : "text-white"
+                                }`}
+                            >
+                              {player.assists}
+                            </span>
+
+                            <span className="text-sm text-zinc-300">
+                              ast
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  {/* Título da seção */}
+                  
+
+                  {/* Card de assistências */}
+                  <div className="overflow-hidden rounded-2xl bg-zinc-900 px-4 py-4">
+
+                    {/* Cabeçalho */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+
+                        <h2 className="text-lg font-bold text-white">
+                           Goleiros Menos Vazados
+                        </h2>
+                        <span className="text-lime-100/70">
+                          Jogos s/ sofrer gol
+                        </span>
+                      </div>
+
+                      
+                    </div>
+
+                    {/* Jogadores */}
+                    <div className="space-y-4">
+                      {leagueStatistics.goalkeepers.map((player) => (
+                        <div
+                          key={player.name}
+                          className="flex items-center justify-between rounded-2xl bg-zinc-950/12 px-4 py-5"
+                        >
+                          {/* Jogador */}
+                          <div className="flex items-center gap-4">
+
+                            {/* Posição */}
+                            <span
+                              className={`w-5 text-center text-lg font-bold ${player.position === 1
+                                  ? "text-lime-400"
+                                  : "text-zinc-300"
+                                }`}
+                            >
+                              #{player.position}
+                            </span>
+
+                            {/* Informações */}
+                            <div>
+                              <h3 className="text-[18px] font-semibold text-white">
+                                {player.name}
+                              </h3>
+
+                              <p className="mt-1 text-sm font-medium text-lime-100/70">
+                                {player.team}  • {player.goalsConcededPerGame}/j
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Assistências */}
+                          <div className="flex items-baseline gap-1">
+                            <span
+                              className={`text-2xl font-bold ${player.position === 1
+                                  ? "text-lime-400"
+                                  : "text-white"
+                                }`}
+                            >
+                              {player.cleanSheets}
+                            </span>
+
+                            <span className="text-sm text-lime-100/70">
+                              clean
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
 
               </div>
             )}

@@ -70,21 +70,21 @@ topScorers: [
     assists: [
         {
             position: 1,
-            player: "G. de Arrascaeta",
+            name: "G. de Arrascaeta",
             team: "Flamengo",
             assists: 10,
         },
 
         {
             position: 2,
-            player: "Raphael Veiga",
+            name: "Raphael Veiga",
             team: "Palmeiras",
             assists: 9,
         },
 
         {
             position: 3,
-            player: "P. H. Ganso",
+            name: "P. H. Ganso",
             team: "Fluminense",
             assists: 8,
         },
@@ -93,7 +93,7 @@ topScorers: [
     goalkeepers: [
         {
             position: 1,
-            player: "Weverton",
+            name: "Weverton",
             team: "Palmeiras",
             cleanSheets: 14,
             goalsConcededPerGame: 0.8,
@@ -101,7 +101,7 @@ topScorers: [
 
         {
             position: 2,
-            player: "Rossi",
+            name: "Rossi",
             team: "Flamengo",
             cleanSheets: 12,
             goalsConcededPerGame: 0.75,
@@ -109,7 +109,7 @@ topScorers: [
 
         {
             position: 3,
-            player: "João Paulo",
+            name: "João Paulo",
             team: "Santos",
             cleanSheets: 10,
             goalsConcededPerGame: 0.88,
