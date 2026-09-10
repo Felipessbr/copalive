@@ -116,25 +116,32 @@ topScorers: [
         },
     ],
 
-    possession: [
+   possession: {
+    average: 58.4,
+
+    leader: {
+        team: "Fluminense",
+        value: 58.4,
+    },
+
+    teams: [
         {
             position: 1,
             team: "Fluminense",
-            possession: 58.4,
+            value: 58.4,
         },
-
         {
             position: 2,
             team: "São Paulo",
-            possession: 56.1,
+            value: 56.1,
         },
-
         {
             position: 3,
             team: "Atlético-MG",
-            possession: 54.8,
+            value: 54.8,
         },
     ],
+},
 
     fairPlay: {
         mostDisciplined: {
