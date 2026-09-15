@@ -7,11 +7,10 @@ export default function useLeagueStandings(leagueId, season) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-
         async function loadStandings() {
-
             try {
                 setLoading(true);
+                setError(null);
 
                 console.log("========== CLASSIFICAÇÃO ==========");
                 console.log("League ID:", leagueId);
@@ -36,19 +35,16 @@ export default function useLeagueStandings(leagueId, season) {
                 );
 
                 setStandings(leagueStandings);
-                setError(null);
-
             } catch (error) {
-
                 console.error(
                     "Erro ao carregar classificação:",
                     error
                 );
 
+                setStandings([]);
                 setError(
                     "Não foi possível carregar a classificação."
                 );
-
             } finally {
                 setLoading(false);
             }
@@ -56,8 +52,10 @@ export default function useLeagueStandings(leagueId, season) {
 
         if (leagueId && season) {
             loadStandings();
+        } else {
+            setStandings([]);
+            setLoading(false);
         }
-
     }, [leagueId, season]);
 
     return {

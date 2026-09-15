@@ -14,7 +14,6 @@ import useLeagueStandings from "../hooks/useLeagueStandings";
 import useLeagueMatches from "../hooks/useLeagueMatches";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
 
-import leagueMatches from "../data/leagueMatches";
 import leagueStatistics from "../data/leagueStatistics";
 import api from './../services/api';
 import { TrophyIcon } from "lucide-react";
@@ -93,14 +92,31 @@ export default function LeagueDetails() {
     error: matchesError,
   } = useLeagueMatches(id, 2024);
 
-  // MOCK DOS JOGOS
-  // Usado enquanto a API está sem cota
+  const displayedMatches = matches.map((match) => ({
+    id: match.fixture.id,
+    date: match.fixture.date,
 
-  const displayedMatches = leagueMatches;
+    status:
+      match.fixture.status === "FT" ||
+        match.fixture.status === "AET" ||
+        match.fixture.status === "PEN"
+        ? "ENCERRADO"
+        : match.fixture.status.short === "NS"
+          ? "AGENDADO"
+          : "AO VIVO",
 
-  console.log("Jogos da liga 2024:", matches);
+    home: match.teams.home.name,
+    homeLogo: match.teams.home.logo,
+    homeScore: match.goals.home,
 
-  // QUALIFICAÇÕES
+    away: match.teams.away.name,
+    awayLogo: match.teams.away.logo,
+    awayScore: match.goals.away,
+
+
+    league: match.league.name,
+
+  }))
 
   const qualifications = [
     ...new Map(
@@ -335,86 +351,143 @@ export default function LeagueDetails() {
             )}
 
             {/* JOGOS */}
-            {activeTab === "matches" && (
-              <div>
-                <div className="mb-5">
-                  <h2 className="text-lg font-bold">Jogos</h2>
-                  <p className="mt-1 text-sm text-zinc-500">Partidas da temporada 2024</p>
+{activeTab === "matches" && (
+  <div>
+    {/* TÍTULO */}
+    <div className="mb-5">
+      <h2 className="text-lg font-bold">Jogos</h2>
+
+      <p className="mt-1 text-sm text-zinc-500">
+        Partidas da temporada 2024
+      </p>
+    </div>
+
+    {/* CARREGANDO */}
+    {matchesLoading ? (
+      <div className="rounded-xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-400">
+          Carregando jogos...
+        </p>
+      </div>
+
+    ) : matchesError ? (
+      /* ERRO */
+      <div className="rounded-xl bg-zinc-900 p-5">
+        <p className="text-sm text-red-400">
+          {matchesError}
+        </p>
+      </div>
+
+    ) : displayedMatches.length === 0 ? (
+      /* NENHUM JOGO */
+      <div className="rounded-xl bg-zinc-900 p-5">
+        <p className="text-sm text-zinc-400">
+          Nenhum jogo encontrado.
+        </p>
+      </div>
+
+    ) : (
+      /* LISTA DE JOGOS */
+      <div className="space-y-4">
+        {displayedMatches.map((match) => {
+          const date = new Date(match.date);
+
+          const formattedDate = date.toLocaleDateString(
+            "pt-BR",
+            {
+              day: "2-digit",
+              month: "short",
+            }
+          );
+
+          const formattedTime = date.toLocaleTimeString(
+            "pt-BR",
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+            }
+          );
+
+          return (
+            <div
+              key={match.id}
+              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+            >
+              {/* DATA + STATUS */}
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-zinc-500">
+                  {formattedDate}
+                </span>
+
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
+                    match.status === "ENCERRADO"
+                      ? "bg-zinc-800 text-zinc-400"
+                      : match.status === "AO VIVO"
+                        ? "bg-lime-400/10 text-lime-400"
+                        : "bg-zinc-800 text-zinc-300"
+                  }`}
+                >
+                  {match.status}
+                </span>
+              </div>
+
+              {/* PARTIDA */}
+              <div className="flex items-center justify-between">
+
+                {/* MANDANTE */}
+                <div className="flex w-[35%] flex-col items-center gap-2 text-center">
+                  <img
+                    src={match.homeLogo}
+                    alt={match.home}
+                    className="h-10 w-10 object-contain"
+                  />
+
+                  <span className="text-xs font-bold text-white">
+                    {match.home}
+                  </span>
                 </div>
 
-                {displayedMatches.length === 0 ? (
-                  <div className="rounded-xl bg-zinc-900 p-5">
-                    <p className="text-sm text-zinc-400">Nenhum jogo encontrado.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {displayedMatches.map((match) => {
-                      const date = new Date(match.date);
+                {/* PLACAR / HORÁRIO */}
+                <div className="flex flex-col items-center">
 
-                      const formattedDate = date.toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                      });
+                  {match.homeScore !== null &&
+                  match.awayScore !== null ? (
+                    <span className="text-xl font-black text-white">
+                      {match.homeScore} - {match.awayScore}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-black text-lime-400">
+                      {formattedTime}
+                    </span>
+                  )}
 
-                      const formattedTime = date.toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      });
+                  <span className="mt-1 text-[10px] font-bold uppercase text-zinc-600">
+                    {match.league}
+                  </span>
+                </div>
 
-                      return (
-                        <div key={match.id} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-                          {/* Data + status */}
-                          <div className="mb-4 flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase text-zinc-500">
-                              {formattedDate}
-                            </span>
+                {/* VISITANTE */}
+                <div className="flex w-[35%] flex-col items-center gap-2 text-center">
+                  <img
+                    src={match.awayLogo}
+                    alt={match.away}
+                    className="h-10 w-10 object-contain"
+                  />
 
-                            <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${match.status === "ENCERRADO"
-                                ? "bg-zinc-800 text-zinc-400"
-                                : "bg-lime-400/10 text-lime-400"
-                                }`}
-                            >
-                              {match.status}
-                            </span>
-                          </div>
+                  <span className="text-xs font-bold text-white">
+                    {match.away}
+                  </span>
+                </div>
 
-                          {/* Partida */}
-                          <div className="flex items-center justify-between">
-                            {/* Mandante */}
-                            <div className="flex w-[35%] flex-col items-center gap-2 text-center">
-                              <img src={match.homeLogo} alt={match.home} className="h-10 w-10 object-contain" />
-                              <span className="text-xs font-bold text-white">{match.home}</span>
-                            </div>
-
-                            {/* Placar / Horário */}
-                            <div className="flex flex-col items-center">
-                              {match.homeScore !== null && match.awayScore !== null ? (
-                                <span className="text-xl font-black text-white">
-                                  {match.homeScore} - {match.awayScore}
-                                </span>
-                              ) : (
-                                <span className="text-sm font-black text-lime-400">{formattedTime}</span>
-                              )}
-
-                              <span className="mt-1 text-[10px] font-bold uppercase text-zinc-600">
-                                Brasileirão
-                              </span>
-                            </div>
-
-                            {/* Visitante */}
-                            <div className="flex w-[35%] flex-col items-center gap-2 text-center">
-                              <img src={match.awayLogo} alt={match.away} className="h-10 w-10 object-contain" />
-                              <span className="text-xs font-bold text-white">{match.away}</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
-            )}
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+)}
 
             {/* ESTATÍSTICAS*/}
 
