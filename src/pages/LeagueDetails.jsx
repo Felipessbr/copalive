@@ -13,8 +13,9 @@ import useLeagueDetails from "../hooks/useLeagueDetails";
 import useLeagueStandings from "../hooks/useLeagueStandings";
 import useLeagueMatches from "../hooks/useLeagueMatches";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
-
+import calculateLeagueStatistics from "../utils/calculateLeagueStatistics";
 import leagueStatistics from "../data/leagueStatistics";
+
 import api from './../services/api';
 import { TrophyIcon } from "lucide-react";
 
@@ -91,6 +92,8 @@ export default function LeagueDetails() {
     loading: matchesLoading,
     error: matchesError,
   } = useLeagueMatches(id, 2024);
+
+  const statistics = calculateLeagueStatistics(matches);
 
   const displayedMatches = matches.map((match) => ({
     id: match.fixture.id,
@@ -351,143 +354,142 @@ export default function LeagueDetails() {
             )}
 
             {/* JOGOS */}
-{activeTab === "matches" && (
-  <div>
-    {/* TÍTULO */}
-    <div className="mb-5">
-      <h2 className="text-lg font-bold">Jogos</h2>
+            {activeTab === "matches" && (
+              <div>
+                {/* TÍTULO */}
+                <div className="mb-5">
+                  <h2 className="text-lg font-bold">Jogos</h2>
 
-      <p className="mt-1 text-sm text-zinc-500">
-        Partidas da temporada 2024
-      </p>
-    </div>
+                  <p className="mt-1 text-sm text-zinc-500">
+                    Partidas da temporada 2024
+                  </p>
+                </div>
 
-    {/* CARREGANDO */}
-    {matchesLoading ? (
-      <div className="rounded-xl bg-zinc-900 p-5">
-        <p className="text-sm text-zinc-400">
-          Carregando jogos...
-        </p>
-      </div>
+                {/* CARREGANDO */}
+                {matchesLoading ? (
+                  <div className="rounded-xl bg-zinc-900 p-5">
+                    <p className="text-sm text-zinc-400">
+                      Carregando jogos...
+                    </p>
+                  </div>
 
-    ) : matchesError ? (
-      /* ERRO */
-      <div className="rounded-xl bg-zinc-900 p-5">
-        <p className="text-sm text-red-400">
-          {matchesError}
-        </p>
-      </div>
+                ) : matchesError ? (
+                  /* ERRO */
+                  <div className="rounded-xl bg-zinc-900 p-5">
+                    <p className="text-sm text-red-400">
+                      {matchesError}
+                    </p>
+                  </div>
 
-    ) : displayedMatches.length === 0 ? (
-      /* NENHUM JOGO */
-      <div className="rounded-xl bg-zinc-900 p-5">
-        <p className="text-sm text-zinc-400">
-          Nenhum jogo encontrado.
-        </p>
-      </div>
+                ) : displayedMatches.length === 0 ? (
+                  /* NENHUM JOGO */
+                  <div className="rounded-xl bg-zinc-900 p-5">
+                    <p className="text-sm text-zinc-400">
+                      Nenhum jogo encontrado.
+                    </p>
+                  </div>
 
-    ) : (
-      /* LISTA DE JOGOS */
-      <div className="space-y-4">
-        {displayedMatches.map((match) => {
-          const date = new Date(match.date);
+                ) : (
+                  /* LISTA DE JOGOS */
+                  <div className="space-y-4">
+                    {displayedMatches.map((match) => {
+                      const date = new Date(match.date);
 
-          const formattedDate = date.toLocaleDateString(
-            "pt-BR",
-            {
-              day: "2-digit",
-              month: "short",
-            }
-          );
+                      const formattedDate = date.toLocaleDateString(
+                        "pt-BR",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                        }
+                      );
 
-          const formattedTime = date.toLocaleTimeString(
-            "pt-BR",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          );
+                      const formattedTime = date.toLocaleTimeString(
+                        "pt-BR",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      );
 
-          return (
-            <div
-              key={match.id}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
-            >
-              {/* DATA + STATUS */}
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-zinc-500">
-                  {formattedDate}
-                </span>
+                      return (
+                        <div
+                          key={match.id}
+                          className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+                        >
+                          {/* DATA + STATUS */}
+                          <div className="mb-4 flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase text-zinc-500">
+                              {formattedDate}
+                            </span>
 
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
-                    match.status === "ENCERRADO"
-                      ? "bg-zinc-800 text-zinc-400"
-                      : match.status === "AO VIVO"
-                        ? "bg-lime-400/10 text-lime-400"
-                        : "bg-zinc-800 text-zinc-300"
-                  }`}
-                >
-                  {match.status}
-                </span>
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${match.status === "ENCERRADO"
+                                ? "bg-zinc-800 text-zinc-400"
+                                : match.status === "AO VIVO"
+                                  ? "bg-lime-400/10 text-lime-400"
+                                  : "bg-zinc-800 text-zinc-300"
+                                }`}
+                            >
+                              {match.status}
+                            </span>
+                          </div>
+
+                          {/* PARTIDA */}
+                          <div className="flex items-center justify-between">
+
+                            {/* MANDANTE */}
+                            <div className="flex w-[35%] flex-col items-center gap-2 text-center">
+                              <img
+                                src={match.homeLogo}
+                                alt={match.home}
+                                className="h-10 w-10 object-contain"
+                              />
+
+                              <span className="text-xs font-bold text-white">
+                                {match.home}
+                              </span>
+                            </div>
+
+                            {/* PLACAR / HORÁRIO */}
+                            <div className="flex flex-col items-center">
+
+                              {match.homeScore !== null &&
+                                match.awayScore !== null ? (
+                                <span className="text-xl font-black text-white">
+                                  {match.homeScore} - {match.awayScore}
+                                </span>
+                              ) : (
+                                <span className="text-sm font-black text-lime-400">
+                                  {formattedTime}
+                                </span>
+                              )}
+
+                              <span className="mt-1 text-[10px] font-bold uppercase text-zinc-600">
+                                {match.league}
+                              </span>
+                            </div>
+
+                            {/* VISITANTE */}
+                            <div className="flex w-[35%] flex-col items-center gap-2 text-center">
+                              <img
+                                src={match.awayLogo}
+                                alt={match.away}
+                                className="h-10 w-10 object-contain"
+                              />
+
+                              <span className="text-xs font-bold text-white">
+                                {match.away}
+                              </span>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-
-              {/* PARTIDA */}
-              <div className="flex items-center justify-between">
-
-                {/* MANDANTE */}
-                <div className="flex w-[35%] flex-col items-center gap-2 text-center">
-                  <img
-                    src={match.homeLogo}
-                    alt={match.home}
-                    className="h-10 w-10 object-contain"
-                  />
-
-                  <span className="text-xs font-bold text-white">
-                    {match.home}
-                  </span>
-                </div>
-
-                {/* PLACAR / HORÁRIO */}
-                <div className="flex flex-col items-center">
-
-                  {match.homeScore !== null &&
-                  match.awayScore !== null ? (
-                    <span className="text-xl font-black text-white">
-                      {match.homeScore} - {match.awayScore}
-                    </span>
-                  ) : (
-                    <span className="text-sm font-black text-lime-400">
-                      {formattedTime}
-                    </span>
-                  )}
-
-                  <span className="mt-1 text-[10px] font-bold uppercase text-zinc-600">
-                    {match.league}
-                  </span>
-                </div>
-
-                {/* VISITANTE */}
-                <div className="flex w-[35%] flex-col items-center gap-2 text-center">
-                  <img
-                    src={match.awayLogo}
-                    alt={match.away}
-                    className="h-10 w-10 object-contain"
-                  />
-
-                  <span className="text-xs font-bold text-white">
-                    {match.away}
-                  </span>
-                </div>
-
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-)}
+            )}
 
             {/* ESTATÍSTICAS*/}
 
@@ -500,23 +502,20 @@ export default function LeagueDetails() {
                   <h2>Estatísticas</h2>
 
                   <p className="mt-1 text-sm text-zinc-500">
-                    Temporada {leagueStatistics.season}
+                   Temporada 2024
                   </p>
 
                 </div>
 
                 {/* RESUMO*/}
 
+                {/* RESUMO */}
                 <div className="grid grid-cols-2 gap-3">
 
                   {/* MÉDIAS DE GOLS */}
-
                   <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-
                     <div className="flex items-center justify-between">
-
-                      <span className="text-[10px] font-bold uppercase 
-                      text-lime-100/70">
+                      <span className="text-[10px] font-bold uppercase text-lime-100/70">
                         Média de gols
                       </span>
 
@@ -524,31 +523,25 @@ export default function LeagueDetails() {
                     </div>
 
                     <div className="mt-3">
-
-                      <span className="text-sm font-bold text-white text-[20px]">
-                        {leagueStatistics.summary.averageGoals.toFixed(2)}
+                      <span className="text-[20px] font-bold text-white">
+                        {statistics.averageGoals.toFixed(2)}
                       </span>
 
                       <span className="ml-1 text-[9px] font-bold text-lime-400">
                         gols / jogo
                       </span>
-
                     </div>
 
                     <p className="mt-1 text-[10px] text-lime-100/70">
-                      {leagueStatistics.summary.totalGoals} gols em {" "}{leagueStatistics.summary.totalMatches} partidas
+                      {statistics.totalGoals} gols em{" "}
+                      {statistics.totalMatches} partidas
                     </p>
-
                   </div>
 
                   {/* MELHOR ATAQUE */}
-
                   <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-
                     <div className="flex items-center justify-between">
-
-                      <span className="text-[10px] font-bold uppercase 
-                      text-lime-100/70">
+                      <span className="text-[10px] font-bold uppercase text-lime-100/70">
                         Melhor ataque
                       </span>
 
@@ -556,18 +549,16 @@ export default function LeagueDetails() {
                     </div>
 
                     <div className="mt-3">
-
-                      <span className="text-sm font-bold text-white text-[20px]">
-                        {leagueStatistics.summary.bestAttack.value}
+                      <span className="text-[20px] font-bold text-white">
+                        {statistics.bestAttack?.goals ?? 0}
                       </span>
 
                       <span className="ml-1 text-[9px] font-bold text-lime-400">
-                        {leagueStatistics.summary.bestAttack.team}
+                        {statistics.bestAttack?.name ?? "—"}
                       </span>
-
                     </div>
 
-                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800 ">
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800">
                       <div
                         className="h-full rounded-full bg-lime-400"
                         style={{
@@ -575,17 +566,12 @@ export default function LeagueDetails() {
                         }}
                       />
                     </div>
-
                   </div>
 
                   {/* MELHOR DEFESA */}
-
                   <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-
                     <div className="flex items-center justify-between">
-
-                      <span className="text-[10px] font-bold uppercase 
-                      text-lime-100/70">
+                      <span className="text-[10px] font-bold uppercase text-lime-100/70">
                         Melhor defesa
                       </span>
 
@@ -593,58 +579,45 @@ export default function LeagueDetails() {
                     </div>
 
                     <div className="mt-3">
-
-                      <span className="text-sm font-bold text-white text-[20px]">
-                        {leagueStatistics.summary.bestDefense.value}
+                      <span className="text-[20px] font-bold text-white">
+                        {statistics.bestDefense?.goalsAgainst ?? 0}
                       </span>
 
                       <span className="ml-1 text-[9px] font-bold text-lime-400">
-                        {leagueStatistics.summary.bestDefense.team}
+                        {statistics.bestDefense?.name ?? "—"}
                       </span>
-
                     </div>
 
                     <p className="mt-1 text-[10px] text-lime-100/70">
-                      Apenas {leagueStatistics.summary.bestDefense.media} {" "}
-                      {leagueStatistics.summary.bestDefense.label}
+                      Menos gols sofridos
                     </p>
-
                   </div>
 
                   {/* DISCIPLINA */}
-
                   <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-
                     <div className="flex items-center justify-between">
-
-                      <span className="text-[10px] font-bold uppercase 
-                      text-lime-100/70">
+                      <span className="text-[10px] font-bold uppercase text-lime-100/70">
                         disciplina
                       </span>
 
                       <span>
                         🟨🟥
                       </span>
-
                     </div>
 
                     <div className="mt-3">
-
-                      <span className="text-sm font-bold text-white text-[20px]">
-                        {leagueStatistics.summary.discipline.averageCards}
+                      <span className="text-[20px] font-bold text-white">
+                        —
                       </span>
 
                       <span className="ml-1 text-[9px] font-bold text-lime-400">
-                        {leagueStatistics.summary.discipline.label}
+                        em breve
                       </span>
-
                     </div>
 
                     <p className="mt-1 text-[10px] text-lime-100/70">
-                      {leagueStatistics.summary.discipline.yellowCards} amarelo . {" "}
-                      {leagueStatistics.summary.discipline.redCards} vermelho
+                      Estatísticas disciplinares serão integradas depois.
                     </p>
-
                   </div>
 
                 </div>
@@ -662,7 +635,7 @@ export default function LeagueDetails() {
                     </div>
 
                     <span className="text-xs font-bold text-lime-400">
-                      Temporada {leagueStatistics.season.toString().slice(-2)}
+                       Temporada 2024
                     </span>
                   </div>
 

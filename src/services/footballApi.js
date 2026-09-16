@@ -22,26 +22,35 @@ export async function getMatchesByDate(date) {
     );
 
     return response.data.response;
-
   } catch (error) {
-    console.error(error.response?.data || error);
+    console.error(
+      "Erro ao buscar partidas por data:",
+      error.response?.data || error
+    );
+
     return [];
   }
 }
+
 export async function getLiveMatches() {
   try {
     const response = await api.get(ENDPOINTS.LIVE);
-    return response.data.response
+
+    return response.data.response;
   } catch (error) {
-    console.error(error.response?.data || error);
+    console.error(
+      "Erro ao buscar partidas ao vivo:",
+      error.response?.data || error
+    );
+
     return [];
   }
 }
-export async function getFinishedMatches() {
-  try {
 
+export async function getFinishedMatches(date) {
+  try {
     const response = await api.get(
-      `${ENDPOINTS.FIXTURES}?date=${today}`
+      `${ENDPOINTS.FIXTURES}?date=${date}&timezone=America/Sao_Paulo`
     );
 
     return response.data.response.filter(
@@ -50,9 +59,12 @@ export async function getFinishedMatches() {
         match.fixture.status.short === "AET" ||
         match.fixture.status.short === "PEN"
     );
-
   } catch (error) {
-    console.error(error.response?.data || error);
+    console.error(
+      "Erro ao buscar partidas finalizadas:",
+      error.response?.data || error
+    );
+
     return [];
   }
 }
@@ -64,7 +76,6 @@ export async function getLeagues() {
     console.log("Ligas encontradas:", response.data.response);
 
     return response.data.response;
-
   } catch (error) {
     console.error(
       "Erro ao buscar ligas:",
@@ -79,13 +90,16 @@ export async function getLeagueById(id) {
   try {
     const response = await api.get(`${ENDPOINTS.LEAGUES}?id=${id}`);
 
-    console.log('Liga buscada:', id)
+    console.log("Liga buscada:", id);
     console.log("Dados da liga:", response.data.response);
 
     return response.data.response;
-
   } catch (error) {
-    console.error('Erro ao buscar liga:', error.response?.data || error);
+    console.error(
+      "Erro ao buscar liga:",
+      error.response?.data || error
+    );
+
     return [];
   }
 }
@@ -102,7 +116,6 @@ export async function getLeagueStandings(leagueId, season) {
     console.log("Resposta BRUTA da API standings:", response.data);
 
     return response.data.response;
-
   } catch (error) {
     console.error(
       "Erro ao buscar classificação:",
@@ -115,20 +128,25 @@ export async function getLeagueStandings(leagueId, season) {
 
 export async function getLeagueMatches(leagueId, season) {
   try {
-    const resposne = await api.get(ENDPOINTS.FIXTURES, {
+    const response = await api.get(ENDPOINTS.FIXTURES, {
       params: {
         league: leagueId,
         season: season,
       },
-    })
+    });
 
-    console.log("Resposta da API fixture:", resposne.data.response);
-    return resposne.data.response;
+    console.log(
+      "Resposta da API fixtures:",
+      response.data.response
+    );
 
+    return response.data.response;
   } catch (error) {
-    console.error("Error ao buscar liga:", error.response?.data || error);
+    console.error(
+      "Erro ao buscar jogos da liga:",
+      error.response?.data || error
+    );
 
     return [];
   }
-
 }
