@@ -150,3 +150,50 @@ export async function getLeagueMatches(leagueId, season) {
     return [];
   }
 }
+
+export async function getLeagueTopScore(leagueId, season) {
+  try {
+    const response = await api.get("/players/topscorers", {
+      params: {
+        league: leagueId,
+        season: season,
+      },
+    });
+
+    console.log("========== ARTILHARIA DA LIGA ==========");
+    console.log("League ID:", leagueId);
+    console.log("Season:", season);
+    console.log("Artilheiros:", response.data.response);
+
+    return response.data.response;
+  } catch (error) {
+    console.error(
+      "Erro ao buscar artilharia",
+      error.response?.data || error
+    );
+
+    return [];
+  }
+}
+
+export async function getLeagueTopAssists(leagueId, season) {
+  try {
+    const reposnse = await api.get("/player/topassists", {
+      params: {
+        league: leagueId,
+        season: season,
+      },
+    });
+
+    console.log("========== ASSINTENCIAS DA LIGA ==========");
+    console.log("League ID:", leagueId);
+    console.log("Season:", season);
+    console.log("Assistentes:", reposnse.data.response);
+
+    return reposnse.data.response;
+  } catch (error) {
+    console.error("Erro ao buscar assistências", error.response?.data || error);
+
+    return [];
+  }
+}
