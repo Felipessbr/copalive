@@ -178,21 +178,24 @@ export async function getLeagueTopScore(leagueId, season) {
 
 export async function getLeagueTopAssists(leagueId, season) {
   try {
-    const reposnse = await api.get("/player/topassists", {
+    const response = await api.get("/players/topassists", {
       params: {
         league: leagueId,
         season: season,
       },
     });
 
-    console.log("========== ASSINTENCIAS DA LIGA ==========");
+    console.log("========== ASSISTÊNCIAS DA LIGA ==========");
     console.log("League ID:", leagueId);
     console.log("Season:", season);
-    console.log("Assistentes:", reposnse.data.response);
+    console.log("Assistências:", response.data.response);
 
-    return reposnse.data.response;
+    return response.data.response;
   } catch (error) {
-    console.error("Erro ao buscar assistências", error.response?.data || error);
+    console.error(
+      "Erro ao buscar assistências:",
+      error.response?.data || error
+    );
 
     return [];
   }

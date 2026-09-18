@@ -7,7 +7,7 @@ import { CiWarning } from "react-icons/ci";
 import { IoStatsChartOutline } from "react-icons/io5";
 import { LiaFireAltSolid } from "react-icons/lia";
 import { RiShieldCheckLine } from "react-icons/ri";
-import { GrTrophy } from "react-icons/gr"; 
+import { GrTrophy } from "react-icons/gr";
 
 import useLeagueDetails from "../hooks/useLeagueDetails";
 import useLeagueStandings from "../hooks/useLeagueStandings";
@@ -524,7 +524,7 @@ export default function LeagueDetails() {
                         Média de gols
                       </span>
 
-                      <IoStatsChartOutline  className="text-lime-400 h-4 w-4" />
+                      <IoStatsChartOutline className="text-lime-400 h-4 w-4" />
                     </div>
 
                     <div className="mt-3">
@@ -550,7 +550,7 @@ export default function LeagueDetails() {
                         Melhor ataque
                       </span>
 
-                      <LiaFireAltSolid  className="text-lime-400 h-4 w-4" />
+                      <LiaFireAltSolid className="text-lime-400 h-4 w-4" />
                     </div>
 
                     <div className="mt-3">
@@ -580,7 +580,7 @@ export default function LeagueDetails() {
                         Melhor defesa
                       </span>
 
-                      <RiShieldCheckLine  className="text-lime-400 h-4 w-4" />
+                      <RiShieldCheckLine className="text-lime-400 h-4 w-4" />
                     </div>
 
                     <div className="mt-3">
@@ -632,7 +632,7 @@ export default function LeagueDetails() {
                   {/* Cabeçalho */}
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <GrTrophy  className="h-4 w-4 text-lime-400" />
+                      <GrTrophy className="h-4 w-4 text-lime-400" />
 
                       <h3 className="text-lg font-bold text-white">
                         Artilharia
@@ -792,7 +792,12 @@ export default function LeagueDetails() {
                     </div>
 
                     {/* Jogadores */}
-                    <div className="space-y-4">
+                    <div className="max-h-[430px] overflow-y-auto overflow-x-hidden rounded-2xl bg-zinc-900 space-y-4"
+                    style={{
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#3f3f46 transparent",
+                    }}>
+
                       {topAssistsLoading ? (
                         <p className="py-6 text-center text-sm text-zinc-500">
                           Carregando assistências...
@@ -802,26 +807,24 @@ export default function LeagueDetails() {
                           {topAssistsError}
                         </p>
                       ) : topAssists.length === 0 ? (
-                        <p className="py-6 text-center text-sm text-zinc-500 border border-zinc-800">
+                        <p className="py-6 text-center text-sm text-zinc-500">
                           Nenhum jogador encontrado.
                         </p>
                       ) : (
-
-                         topAssists.assists.map((player) => {
-
+                        topAssists.map((player, index) => {
                           const playerData = player.player;
                           const statisticsData = player.statistics?.[0];
 
-                          const assists=
-                            statisticsData?.assists?.total ?? 0;
+                          const assists =
+                            statisticsData?.goals?.assists ?? 0;
 
                           const playerName =
-                              playerData?.name ?? "Jogador";
+                            playerData?.name ?? "Jogador";
 
                           const teamName =
                             statisticsData?.team?.name ?? "—";
 
-                            return(
+                          return (
                             <div
                               key={playerData?.id ?? index}
                               className="flex items-center justify-between rounded-2xl bg-zinc-950/12 px-4 py-5"
@@ -832,8 +835,8 @@ export default function LeagueDetails() {
                                 {/* Posição */}
                                 <span
                                   className={`w-5 text-center text-lg font-bold ${index === 0
-                                    ? "text-lime-400"
-                                    : "text-zinc-300"
+                                      ? "text-lime-400"
+                                      : "text-zinc-300"
                                     }`}
                                 >
                                   #{index + 1}
@@ -846,7 +849,7 @@ export default function LeagueDetails() {
                                   </h3>
 
                                   <p className="mt-1 text-sm font-medium text-zinc-300">
-                                    {teamName} • {assists}
+                                    {teamName}
                                   </p>
                                 </div>
                               </div>
@@ -855,8 +858,8 @@ export default function LeagueDetails() {
                               <div className="flex items-baseline gap-1">
                                 <span
                                   className={`text-2xl font-bold ${index === 0
-                                    ? "text-lime-400"
-                                    : "text-white"
+                                      ? "text-lime-400"
+                                      : "text-white"
                                     }`}
                                 >
                                   {assists}
@@ -870,6 +873,7 @@ export default function LeagueDetails() {
                           );
                         })
                       )}
+
                     </div>
 
                   </div>
@@ -1091,7 +1095,7 @@ export default function LeagueDetails() {
                     <div className="rounded-2xl bg-zinc-900 px-4 py-6">
 
                       <div className="flex items-center gap-2 text-red-400">
-                        <CiWarning  className="h-5 w-5" />
+                        <CiWarning className="h-5 w-5" />
 
                         <span className="text-[11px] font-bold">
                           + FALTOSA
