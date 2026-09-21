@@ -1,5 +1,5 @@
-import { use, useEffect, useState } from "react";
-import { getLeagueTopScore } from "../services/footballApi";
+import {  useEffect, useState } from "react";
+import { getLeagueTopScorers } from "../services/footballApi";
 
 export default function useLeagueTopScorers(leagueId, season) {
     const [topScorers, setTopScorers] = useState([]);
@@ -14,7 +14,7 @@ export default function useLeagueTopScorers(leagueId, season) {
                 console.log("League ID:", leagueId);
                 console.log("Season:", season);
 
-                const data = await getLeagueTopScore(leagueId, season);
+                const data = await getLeagueTopScorers(leagueId, season);
 
                 console.log("Artilheiros:", data);
 

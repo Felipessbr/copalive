@@ -1,6 +1,48 @@
 import api from "./api";
 import { ENDPOINTS } from "./endpoints";
 
+const CACHE_TIME = 1000 * 60 * 60 * 6; // 6 horas
+
+async function cachedApiRequest(key, request) {
+  const cached = sessionStorage.getItem(key);
+
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+
+      const isValid = Date.now() - parsed.timestamp < CACHE_TIME;
+
+      if (isValid) {
+        console.log("🟡 CACHE DA SESSÃO:", key);
+
+        return {
+          status: 200,
+          data: parsed.data,
+        };
+      }
+
+      sessionStorage.removeItem(key);
+    } catch (error) {
+      console.warn("⚠️ Cache inválido:", key);
+      sessionStorage.removeItem(key);
+    }
+  }
+
+  console.log("🔵 NOVA REQUISIÇÃO:", key);
+
+  const response = await request();
+
+  sessionStorage.setItem(
+    key,
+    JSON.stringify({
+      timestamp: Date.now(),
+      data: response.data,
+    })
+  );
+
+  return response;
+}
+
 export async function getMatchesByDate(date) {
   try {
     const response = await api.get(
@@ -106,19 +148,24 @@ export async function getLeagueById(id) {
 
 export async function getLeagueStandings(leagueId, season) {
   try {
-    const response = await api.get("/standings", {
-      params: {
-        league: leagueId,
-        season: season,
-      },
-    });
+    const cacheKey = `copalive-standings-${leagueId}-${season}`;
 
-    console.log("Resposta BRUTA da API standings:", response.data);
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get("/standings", {
+        params: {
+          league: leagueId,
+          season: season,
+        },
+      })
+    );
 
-    return response.data.response;
+    console.log("🟢 STATUS STANDINGS:", response.status);
+    console.log("🟢 RESULTADOS STANDINGS:", response.data.results);
+
+    return response.data.response || [];
   } catch (error) {
     console.error(
-      "Erro ao buscar classificação:",
+      "🔴 ERRO AO BUSCAR CLASSIFICAÇÃO:",
       error.response?.data || error
     );
 
@@ -128,49 +175,51 @@ export async function getLeagueStandings(leagueId, season) {
 
 export async function getLeagueMatches(leagueId, season) {
   try {
-    const response = await api.get(ENDPOINTS.FIXTURES, {
-      params: {
-        league: leagueId,
-        season: season,
-      },
-    });
+    const cacheKey = `copalive-fixtures-${leagueId}-${season}`;
 
-    console.log(
-      "Resposta da API fixtures:",
-      response.data.response
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get(ENDPOINTS.FIXTURES, {
+        params: {
+          league: leagueId,
+          season: season,
+        },
+      })
     );
 
-    return response.data.response;
+    console.log("🟢 STATUS FIXTURES:", response.status);
+    console.log("🟢 TOTAL DE JOGOS:", response.data.results);
+
+    return response.data.response || [];
   } catch (error) {
-    console.error(
-      "Erro ao buscar jogos da liga:",
-      error.response?.data || error
-    );
+    console.error("🔴 ERRO AO BUSCAR JOGOS:", error);
+    console.error("🔴 STATUS:", error.response?.status);
+    console.error("🔴 DADOS DO ERRO:", error.response?.data);
 
     return [];
   }
 }
 
-export async function getLeagueTopScore(leagueId, season) {
+export async function getLeagueTopScorers(leagueId, season) {
   try {
-    const response = await api.get("/players/topscorers", {
-      params: {
-        league: leagueId,
-        season: season,
-      },
-    });
+    const cacheKey = `copalive-topscorers-${leagueId}-${season}`;
 
-    console.log("========== ARTILHARIA DA LIGA ==========");
-    console.log("League ID:", leagueId);
-    console.log("Season:", season);
-    console.log("Artilheiros:", response.data.response);
-
-    return response.data.response;
-  } catch (error) {
-    console.error(
-      "Erro ao buscar artilharia",
-      error.response?.data || error
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get("/players/topscorers", {
+        params: {
+          league: leagueId,
+          season: season,
+        },
+      })
     );
+
+    console.log("🟢 STATUS TOP SCORERS:", response.status);
+    console.log("🟢 TOTAL ARTILHEIROS:", response.data.results);
+
+    return response.data.response || [];
+  } catch (error) {
+    console.error("🔴 ERRO TOP SCORERS:", error);
+    console.error("🔴 STATUS:", error.response?.status);
+    console.error("🔴 DADOS DO ERRO:", error.response?.data);
 
     return [];
   }
@@ -178,24 +227,25 @@ export async function getLeagueTopScore(leagueId, season) {
 
 export async function getLeagueTopAssists(leagueId, season) {
   try {
-    const response = await api.get("/players/topassists", {
-      params: {
-        league: leagueId,
-        season: season,
-      },
-    });
+    const cacheKey = `copalive-topassists-${leagueId}-${season}`;
 
-    console.log("========== ASSISTÊNCIAS DA LIGA ==========");
-    console.log("League ID:", leagueId);
-    console.log("Season:", season);
-    console.log("Assistências:", response.data.response);
-
-    return response.data.response;
-  } catch (error) {
-    console.error(
-      "Erro ao buscar assistências:",
-      error.response?.data || error
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get("/players/topassists", {
+        params: {
+          league: leagueId,
+          season: season,
+        },
+      })
     );
+
+    console.log("🟢 STATUS TOP ASSISTS:", response.status);
+    console.log("🟢 TOTAL ASSISTÊNCIAS:", response.data.results);
+
+    return response.data.response || [];
+  } catch (error) {
+    console.error("🔴 ERRO TOP ASSISTS:", error);
+    console.error("🔴 STATUS:", error.response?.status);
+    console.error("🔴 DADOS DO ERRO:", error.response?.data);
 
     return [];
   }
