@@ -7,12 +7,17 @@ export default function useLeagueStandings(leagueId, season) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
+
         async function loadStandings() {
             try {
                 setLoading(true);
                 setError(null);
 
-                console.log("========== CLASSIFICAÇÃO ==========");
+                console.log(
+                    "========== CLASSIFICAÇÃO =========="
+                );
+
                 console.log("League ID:", leagueId);
                 console.log("Season:", season);
 
@@ -26,6 +31,10 @@ export default function useLeagueStandings(leagueId, season) {
                     data
                 );
 
+                if (cancelled) {
+                    return;
+                }
+
                 const leagueStandings =
                     data?.[0]?.league?.standings?.[0] || [];
 
@@ -34,19 +43,32 @@ export default function useLeagueStandings(leagueId, season) {
                     leagueStandings
                 );
 
-                setStandings(leagueStandings);
+                if (leagueStandings.length > 0) {
+                    setStandings(leagueStandings);
+                } else {
+                    console.warn(
+                        "⚠️ API retornou classificação vazia. Mantendo os dados atuais."
+                    );
+                }
+
             } catch (error) {
+                if (cancelled) {
+                    return;
+                }
+
                 console.error(
                     "Erro ao carregar classificação:",
                     error
                 );
 
-                setStandings([]);
                 setError(
                     "Não foi possível carregar a classificação."
                 );
+
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
 
@@ -56,6 +78,11 @@ export default function useLeagueStandings(leagueId, season) {
             setStandings([]);
             setLoading(false);
         }
+
+        return () => {
+            cancelled = true;
+        };
+
     }, [leagueId, season]);
 
     return {

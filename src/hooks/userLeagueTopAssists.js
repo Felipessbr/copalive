@@ -2,55 +2,81 @@ import { useEffect, useState } from "react";
 import { getLeagueTopAssists } from "../services/footballApi";
 
 export default function useLeagueTopAssists(leagueId, season) {
-  const [topAssists, setTopAssists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [topAssists, setTopAssists] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function loadTopAssists() {
-      try {
-        setLoading(true);
+    useEffect(() => {
+        let cancelled = false;
 
-        console.log("========== CARREGANDO ASSISTÊNCIAS ==========");
-        console.log("League ID:", leagueId);
-        console.log("Season:", season);
+        async function loadTopAssists() {
+            try {
+                setLoading(true);
 
-        const data = await getLeagueTopAssists(
-          leagueId,
-          season
-        );
+                console.log(
+                    "========== CARREGANDO ASSISTÊNCIAS =========="
+                );
 
-        console.log(
-          "Assistências recebidas:",
-          data
-        );
+                console.log("League ID:", leagueId);
+                console.log("Season:", season);
 
-        setTopAssists(data || []);
-        setError(null);
-      } catch (error) {
-        console.error(
-          "Erro ao carregar assistências:",
-          error
-        );
+                const data = await getLeagueTopAssists(
+                    leagueId,
+                    season
+                );
 
-        setError(
-          "Não foi possível carregar as assistências."
-        );
+                console.log(
+                    "Assistências recebidas:",
+                    data
+                );
 
-        setTopAssists([]);
-      } finally {
-        setLoading(false);
-      }
-    }
+                if (cancelled) {
+                    return;
+                }
 
-    if (leagueId && season) {
-      loadTopAssists();
-    }
-  }, [leagueId, season]);
+                if (data && data.length > 0) {
+                    setTopAssists(data);
+                    setError(null);
+                } else {
+                    console.warn(
+                        "⚠️ API retornou 0 assistências. Mantendo os dados atuais."
+                    );
+                }
 
-  return {
-    topAssists,
-    loading,
-    error,
-  };
+            } catch (error) {
+                if (cancelled) {
+                    return;
+                }
+
+                console.error(
+                    "Erro ao carregar assistências:",
+                    error
+                );
+
+                setError(
+                    "Não foi possível carregar as assistências."
+                );
+
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        if (leagueId && season) {
+            loadTopAssists();
+        }
+
+        return () => {
+            cancelled = true;
+        };
+
+    }, [leagueId, season]);
+
+    return {
+        topAssists,
+        loading,
+        error,
+    };
 }

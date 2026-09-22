@@ -1,4 +1,4 @@
-import {  useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getLeagueTopScorers } from "../services/footballApi";
 
 export default function useLeagueTopScorers(leagueId, season) {
@@ -7,34 +7,73 @@ export default function useLeagueTopScorers(leagueId, season) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
+
         async function loadTopScorers() {
             try {
                 setILoading(true);
-                console.log("========== CARREGANDO ARTILHARIA ==========");
+
+                console.log(
+                    "========== CARREGANDO ARTILHARIA =========="
+                );
+
                 console.log("League ID:", leagueId);
                 console.log("Season:", season);
 
-                const data = await getLeagueTopScorers(leagueId, season);
+                const data = await getLeagueTopScorers(
+                    leagueId,
+                    season
+                );
 
                 console.log("Artilheiros:", data);
 
-                setTopScorers(data || [])
-                setError(null);
+                if (cancelled) {
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    setTopScorers(data);
+                    setError(null);
+                } else {
+                    console.warn(
+                        "⚠️ API retornou 0 artilheiros. Mantendo os dados atuais."
+                    );
+                }
+
             } catch (error) {
-                console.error("Erro ao buscar artilharia", error);
+                if (cancelled) {
+                    return;
+                }
 
-                setError("Não foi possível buscar artilharia");
+                console.error(
+                    "Erro ao buscar artilharia:",
+                    error
+                );
 
-                setTopScorers([]);
+                setError(
+                    "Não foi possível buscar artilharia."
+                );
+
             } finally {
-                setILoading(false);
+                if (!cancelled) {
+                    setILoading(false);
+                }
             }
         }
 
         if (leagueId && season) {
             loadTopScorers();
         }
+
+        return () => {
+            cancelled = true;
+        };
+
     }, [leagueId, season]);
 
-    return { topScorers, iLoading, error };
+    return {
+        topScorers,
+        iLoading,
+        error,
+    };
 }

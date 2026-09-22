@@ -1,61 +1,54 @@
 import { useEffect, useState } from "react";
-import { getLeagueMatches } from "../services/footballApi";
+import { getLeagueGoalKeepers } from "../services/footballApi";
 
-export default function useLeagueMatches(leagueId, season) {
-    const [matches, setMatches] = useState([]);
+export default function useLeagueGoalkeepers(leagueId, season) {
+    const [goalkeepers, setGoalkeepers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
 
-        async function loadMatches() {
+        async function loadGoalKeepers() {
             try {
                 setLoading(true);
 
-                console.log("========== JOGOS DA LIGA ==========");
+                console.log(
+                    "========== CARREGANDO GOLEIROS =========="
+                );
+
                 console.log("League ID:", leagueId);
                 console.log("Season:", season);
 
-                const data = await getLeagueMatches(
+                const data = await getLeagueGoalKeepers(
                     leagueId,
                     season
-                );
+                )
 
-                console.log(
-                    "Resposta completa dos jogos da liga:",
-                    data
-                );
+                console.log("Goleiros recebidos:", data);
 
-                // Ignora uma resposta que chegou depois
-                // que o efeito já foi cancelado
                 if (cancelled) {
                     return;
                 }
 
-                // Só substitui os dados se a API realmente
-                // retornou partidas
                 if (data && data.length > 0) {
-                    setMatches(data);
+                    setGoalkeepers(data);
                     setError(null);
                 } else {
                     console.warn(
-                        "⚠️ API retornou 0 jogos. Mantendo os dados atuais."
+                        "⚠️ API retornou 0 goleiros."
                     );
                 }
-
             } catch (error) {
                 if (cancelled) {
                     return;
                 }
-
                 console.error(
-                    "Erro ao carregar os jogos da liga:",
+                    "Erro ao carregar goleiros:",
                     error
                 );
-
                 setError(
-                    "Não foi possível carregar os jogos."
+                    "Não foi possível carregar os goleiros."
                 );
             } finally {
                 if (!cancelled) {
@@ -65,7 +58,7 @@ export default function useLeagueMatches(leagueId, season) {
         }
 
         if (leagueId && season) {
-            loadMatches();
+            loadGoalKeepers();
         }
 
         return () => {
@@ -75,8 +68,8 @@ export default function useLeagueMatches(leagueId, season) {
     }, [leagueId, season]);
 
     return {
-        matches,
+        goalkeepers,
         loading,
-        error,
-    };
+
+    }
 }

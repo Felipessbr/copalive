@@ -3,17 +3,30 @@ import { ENDPOINTS } from "./endpoints";
 
 const CACHE_TIME = 1000 * 60 * 60 * 6; // 6 horas
 
+const pendingRequests = new Map();
+
 async function cachedApiRequest(key, request) {
+
   const cached = sessionStorage.getItem(key);
 
   if (cached) {
     try {
       const parsed = JSON.parse(cached);
 
-      const isValid = Date.now() - parsed.timestamp < CACHE_TIME;
+      const isValid =
+        Date.now() - parsed.timestamp < CACHE_TIME;
 
-      if (isValid) {
-        console.log("🟡 CACHE DA SESSÃO:", key);
+      const cachedResponse = parsed.data?.response;
+
+      const hasData =
+        Array.isArray(cachedResponse) &&
+        cachedResponse.length > 0;
+
+      if (isValid && hasData) {
+        console.log(
+          "🟡 CACHE DA SESSÃO:",
+          key
+        );
 
         return {
           status: 200,
@@ -21,26 +34,86 @@ async function cachedApiRequest(key, request) {
         };
       }
 
+      console.warn(
+        "⚠️ CACHE VAZIO/EXPIRADO:",
+        key
+      );
+
       sessionStorage.removeItem(key);
+
     } catch (error) {
-      console.warn("⚠️ Cache inválido:", key);
+      console.warn(
+        "⚠️ Cache inválido:",
+        key
+      );
+
       sessionStorage.removeItem(key);
     }
   }
 
-  console.log("🔵 NOVA REQUISIÇÃO:", key);
+  if (pendingRequests.has(key)) {
+    console.log(
+      "🟣 REQUISIÇÃO JÁ EM ANDAMENTO:",
+      key
+    );
 
-  const response = await request();
+    return pendingRequests.get(key);
+  }
 
-  sessionStorage.setItem(
-    key,
-    JSON.stringify({
-      timestamp: Date.now(),
-      data: response.data,
-    })
+  console.log(
+    "🔵 NOVA REQUISIÇÃO:",
+    key
   );
 
-  return response;
+  const requestPromise = (async () => {
+    try {
+      const response = await request();
+
+      const responseData =
+        response.data?.response;
+
+      const hasData =
+        Array.isArray(responseData) &&
+        responseData.length > 0;
+
+      if (hasData) {
+        sessionStorage.setItem(
+          key,
+          JSON.stringify({
+            timestamp: Date.now(),
+            data: response.data,
+          })
+        );
+
+        console.log(
+          "🟢 DADOS SALVOS NO CACHE:",
+          key
+        );
+      } else {
+        console.warn(
+          "⚠️ RESPOSTA VAZIA - NÃO SALVANDO:",
+          key
+        );
+
+        sessionStorage.removeItem(key);
+      }
+
+      return response;
+
+    } finally {
+      // Remove a requisição da lista
+      // quando ela terminar
+      pendingRequests.delete(key);
+    }
+  })();
+
+  // Guarda a requisição atual
+  pendingRequests.set(
+    key,
+    requestPromise
+  );
+
+  return requestPromise;
 }
 
 export async function getMatchesByDate(date) {
@@ -246,6 +319,136 @@ export async function getLeagueTopAssists(leagueId, season) {
     console.error("🔴 ERRO TOP ASSISTS:", error);
     console.error("🔴 STATUS:", error.response?.status);
     console.error("🔴 DADOS DO ERRO:", error.response?.data);
+
+    return [];
+  }
+}
+
+export async function getLeagueGoalKeepers(leagueId, season) {
+  try {
+    console.log("🔵 Buscando goleiros da liga");
+    console.log("League ID:", leagueId);
+    console.log("Season:", season);
+
+    let page = 1;
+    let allPlayers = [];
+
+    while (true) {
+      const cacheKey = `copalive-goalkeepers-${leagueId}-${season}-${page}`;
+
+      const response = await cachedApiRequest(
+        cacheKey,
+        () =>
+          api.get("/players", {
+            params: {
+              league: leagueId,
+              season: season,
+              page: page,
+            },
+          })
+      );
+
+      const players = response.data.response || [];
+
+      allPlayers = [
+        ...allPlayers,
+        ...players
+      ];
+
+      const totalPages = response.data?.paging?.total || 1;
+
+      console.log(
+        `Página ${page}/${totalPages}:`,
+        players.length, "jogadores"
+      )
+
+      if (page >= totalPages) {
+        break;
+      }
+
+      page++;
+
+    }
+    const goalkeepers = allPlayers.filter((player) =>
+      player.statistics?.some(
+        (stat) =>
+          stat.games?.position === "Goalkeeper"
+      )
+    );
+
+    console.log(
+      "🧤 ESTATÍSTICAS DOS GOLEIROS:",
+      goalkeepers.map((player) => {
+        const stats = player.statistics?.[0];
+
+        return {
+          id: player.player?.id,
+          nome: player.player?.name,
+          foto: player.player?.photo,
+          time: stats?.team?.name,
+
+          aparicoes: stats?.games?.appearences,
+          titulares: stats?.games?.lineups,
+          minutos: stats?.games?.minutes,
+
+          golsSofridos: stats?.goals?.conceded,
+          defesas: stats?.goals?.saves,
+        };
+      })
+    );
+
+    const formattedGoalkeepers = goalkeepers
+      .map((player) => {
+        const stats = player.statistics?.[0];
+
+        const appearances =
+          stats?.games?.appearences || 0;
+
+        const goalsConceded =
+          stats?.goals?.conceded || 0;
+
+        const saves =
+          stats?.goals?.saves || 0;
+
+        const goalsConcededPerGame =
+          appearances > 0
+            ? (goalsConceded / appearances).toFixed(2)
+            : "0.00";
+
+        return {
+          id: player.player?.id,
+          name: player.player?.name,
+          photo: player.player?.photo,
+          team: stats?.team?.name,
+
+          appearances,
+          lineups: stats?.games?.lineups || 0,
+          minutes: stats?.games?.minutes || 0,
+
+          goalsConceded,
+          saves,
+          goalsConcededPerGame,
+        };
+      })
+      .filter((player) => player.appearances > 0)
+      .sort(
+        (a, b) =>
+          Number(a.goalsConcededPerGame) -
+          Number(b.goalsConcededPerGame)
+      );
+
+    console.log(
+      "🧤 GOLEIROS FORMATADOS:",
+      formattedGoalkeepers
+    );
+
+    return formattedGoalkeepers;
+
+  } catch (error) {
+    console.error(
+      "🔴 ERRO AO BUSCAR GOLEIROS:",
+      error.response?.data || error
+    );
 
     return [];
   }

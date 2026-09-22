@@ -14,6 +14,7 @@ import useLeagueStandings from "../hooks/useLeagueStandings";
 import useLeagueMatches from "../hooks/useLeagueMatches";
 import useLeagueTopScorers from "../hooks/useLeagueTopScorers";
 import useLeagueTopAssists from "../hooks/userLeagueTopAssists";
+import useLeagueGoalkeepers from "../hooks/useLeagueGoalkeepers";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
 
 import calculateLeagueStatistics from "../utils/calculateLeagueStatistics";
@@ -105,6 +106,11 @@ export default function LeagueDetails() {
     error: topAssistsError,
   } = useLeagueTopAssists(id, 2024);
 
+  const {
+    goalkeepers,
+    loading: goalkeepersLoading,
+    error: goalkeepersError,
+  } = useLeagueGoalkeepers(id, 2024);
 
   const statistics = calculateLeagueStatistics(matches);
 
@@ -793,10 +799,10 @@ export default function LeagueDetails() {
 
                     {/* Jogadores */}
                     <div className="max-h-[430px] overflow-y-auto overflow-x-hidden rounded-2xl bg-zinc-900 space-y-4"
-                    style={{
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#3f3f46 transparent",
-                    }}>
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "#3f3f46 transparent",
+                      }}>
 
                       {topAssistsLoading ? (
                         <p className="py-6 text-center text-sm text-zinc-500">
@@ -835,8 +841,8 @@ export default function LeagueDetails() {
                                 {/* Posição */}
                                 <span
                                   className={`w-5 text-center text-lg font-bold ${index === 0
-                                      ? "text-lime-400"
-                                      : "text-zinc-300"
+                                    ? "text-lime-400"
+                                    : "text-zinc-300"
                                     }`}
                                 >
                                   #{index + 1}
@@ -858,8 +864,8 @@ export default function LeagueDetails() {
                               <div className="flex items-baseline gap-1">
                                 <span
                                   className={`text-2xl font-bold ${index === 0
-                                      ? "text-lime-400"
-                                      : "text-white"
+                                    ? "text-lime-400"
+                                    : "text-white"
                                     }`}
                                 >
                                   {assists}
@@ -891,62 +897,93 @@ export default function LeagueDetails() {
                           Goleiros Menos Vazados
                         </h2>
                         <span className="text-lime-100/70">
-                          Jogos s/ sofrer gol
+                          Gols sofridos por jogo
                         </span>
                       </div>
 
 
                     </div>
-
-                    {/* Jogadores */}
                     <div className="space-y-4">
-                      {leagueStatistics.goalkeepers.map((player) => (
-                        <div
-                          key={player.name}
-                          className="flex items-center justify-between rounded-2xl bg-zinc-950/12 px-4 py-5"
-                        >
-                          {/* Jogador */}
-                          <div className="flex items-center gap-4">
 
-                            {/* Posição */}
-                            <span
-                              className={`w-5 text-center text-lg font-bold ${player.position === 1
-                                ? "text-lime-400"
-                                : "text-zinc-300"
-                                }`}
-                            >
-                              #{player.position}
-                            </span>
+                      {goalkeepersLoading ? (
 
-                            {/* Informações */}
-                            <div>
-                              <h3 className="text-[18px] font-semibold text-white">
-                                {player.name}
-                              </h3>
+                        <p className="px-4 py-4 text-sm text-lime-100/70">
+                          Carregando goleiros...
+                        </p>
 
-                              <p className="mt-1 text-sm font-medium text-lime-100/70">
-                                {player.team}  • {player.goalsConcededPerGame}/j
-                              </p>
+                      ) : goalkeepersError ? (
+
+                        <p className="px-4 py-4 text-sm text-red-400">
+                          {goalkeepersError}
+                        </p>
+
+                      ) : goalkeepers.length === 0 ? (
+
+                        <p className="px-4 py-4 text-sm text-lime-100/70">
+                          Nenhum goleiro encontrado.
+                        </p>
+
+                      ) : (
+
+                        goalkeepers.slice(0, 3).map((player, index) => (
+
+                          <div
+                            key={player.id}
+                            className="flex items-center justify-between rounded-2xl bg-zinc-950/12 px-4 py-5"
+                          >
+
+                            {/* Jogador */}
+                            <div className="flex items-center gap-4">
+
+                              {/* Posição */}
+                              <span
+                                className={`w-5 text-center text-lg font-bold ${index === 0
+                                  ? "text-lime-400"
+                                  : "text-zinc-300"
+                                  }`}
+                              >
+                                #{index + 1}
+                              </span>
+
+                              {/* Informações */}
+                              <div>
+
+                                <h3 className="text-[18px] font-semibold text-white">
+                                  {player.name}
+                                </h3>
+
+                                <p className="mt-1 text-sm font-medium text-lime-100/70">
+                                  {player.team} • {player.goalsConcededPerGame}/j
+                                </p>
+
+                              </div>
+
                             </div>
+
+                            {/* Gols sofridos */}
+                            <div className="flex items-baseline gap-1">
+
+                              <span
+                                className={`text-2xl font-bold ${index === 0
+                                  ? "text-lime-400"
+                                  : "text-white"
+                                  }`}
+                              >
+                                {player.goalsConceded}
+                              </span>
+
+                              <span className="text-lime-100/70">
+                                Gols sofridos por jogo
+                              </span>
+
+                            </div>
+
                           </div>
 
-                          {/* Assistências */}
-                          <div className="flex items-baseline gap-1">
-                            <span
-                              className={`text-2xl font-bold ${player.position === 1
-                                ? "text-lime-400"
-                                : "text-white"
-                                }`}
-                            >
-                              {player.cleanSheets}
-                            </span>
+                        ))
 
-                            <span className="text-sm text-lime-100/70">
-                              clean
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                      )}
+
                     </div>
                   </div>
                 </div>
