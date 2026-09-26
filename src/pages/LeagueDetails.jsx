@@ -13,10 +13,10 @@ import useLeagueDetails from "../hooks/useLeagueDetails";
 import useLeagueStandings from "../hooks/useLeagueStandings";
 import useLeagueMatches from "../hooks/useLeagueMatches";
 import useLeagueTopScorers from "../hooks/useLeagueTopScorers";
-import useLeagueTopAssists from "../hooks/userLeagueTopAssists";
+import useLeagueTopAssists from "../hooks/useLeagueTopAssists";
 import useLeagueGoalkeepers from "../hooks/useLeagueGoalkeepers";
+import useLeaguePossession from "../hooks/useLeaguePossession";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
-
 import calculateLeagueStatistics from "../utils/calculateLeagueStatistics";
 import leagueStatistics from "../data/leagueStatistics";
 
@@ -95,6 +95,15 @@ export default function LeagueDetails() {
   } = useLeagueMatches(id, 2024);
 
   const {
+    possession,
+    loading: possessionLoading,
+    error: possessionError,
+  } = useLeaguePossession(
+    id,
+    2024,
+    matches
+  );
+  const {
     topScorers,
     iLoading: topScorersLoading,
     error: topScorersError,
@@ -111,6 +120,7 @@ export default function LeagueDetails() {
     loading: goalkeepersLoading,
     error: goalkeepersError,
   } = useLeagueGoalkeepers(id, 2024);
+
 
   const statistics = calculateLeagueStatistics(matches);
 
@@ -173,6 +183,30 @@ export default function LeagueDetails() {
       </main>
     );
   }
+
+  const possessionRanking = possession
+    .map((team, index) => ({
+      position: index + 1,
+      team: team.teamName,
+      value: team.averagePossession,
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const possessionAverage =
+    possessionRanking.length > 0
+      ? Number(
+        (
+          possessionRanking.reduce(
+            (total, team) =>
+              total + team.value,
+            0
+          ) / possessionRanking.length
+        ).toFixed(1)
+      )
+      : 0;
+
+  const possessionLeader =
+    possessionRanking[0]?.team || "-";
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -989,9 +1023,12 @@ export default function LeagueDetails() {
                 </div>
 
                 {/* DOMÍNIO & POSSE DE BOLA */}
+
                 <div className="mt-6">
+
                   {/* Cabeçalho */}
                   <div className="mb-4 flex items-start justify-between gap-4">
+
                     <h1 className="text-2xl font-bold leading-tight text-white">
                       Posse de Bola
                     </h1>
@@ -999,83 +1036,136 @@ export default function LeagueDetails() {
                     <span className="pt-1 text-right text-sm font-semibold leading-tight text-lime-400">
                       Média da Série A
                     </span>
+
                   </div>
 
                   {/* Card */}
-                  <div className="rounded-2xl bg-zinc-900 px-4 py-6">
+                  <div
+                    className="max-h-[430px] overflow-y-auto overflow-x-hidden rounded-2xl bg-zinc-900 px-4 py-6"
+                    style={{
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#3f3f46 transparent",
+                    }}
+                  >
 
-                    {/* Resumo */}
-                    <div className="flex items-start justify-between">
+                    {possessionLoading ? (
 
-                      {/* Média */}
-                      <div>
-                        <span className="text-4xl font-bold text-white">
-                          {leagueStatistics.possession.average}%
-                        </span>
-
-                        <p className="mt-2 text-sm text-lime-100/70">
-                          Maior Posse Média:{" "}
-                          <span className="font-bold text-white">
-                            {leagueStatistics.possession.leader.team}
-                          </span>
-                        </p>
+                      <div className="py-10 text-center text-sm text-zinc-400">
+                        Carregando posse de bola...
                       </div>
 
-                      {/* Círculo */}
-                      <div className="relative h-[88px] w-[88px]">
-                        <div
-                          className="h-full w-full rounded-full"
-                          style={{
-                            background: `conic-gradient(#a3ff12 ${leagueStatistics.possession.average * 3.6
-                              }deg, #3f4146 0deg)`,
-                          }}
-                        />
+                    ) : possession.length === 0 ? (
 
-                        <div className="absolute inset-[8px] flex items-center justify-center rounded-full bg-zinc-900">
-                          <span className="text-sm font-bold text-lime-400">
-                            {Math.round(leagueStatistics.possession.average)}%
-                          </span>
-                        </div>
+                      <div className="py-10 text-center text-sm text-zinc-400">
+                        Nenhum dado de posse encontrado.
                       </div>
-                    </div>
 
-                    {/* Ranking */}
-                    <div className="mt-8 space-y-5">
-                      {leagueStatistics.possession.teams.map((team) => (
-                        <div key={team.team}>
+                    ) : (
 
-                          {/* Nome + porcentagem */}
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="text-sm font-semibold text-white">
-                              {team.position}. {team.team}
+                      <>
+
+                        {/* Resumo */}
+                        <div className="flex items-start justify-between">
+
+                          {/* Média */}
+                          <div>
+
+                            <span className="text-4xl font-bold text-white">
+                              {possessionAverage}%
                             </span>
 
-                            <span
-                              className={`text-sm font-bold ${team.position === 1
-                                ? "text-lime-400"
-                                : "text-zinc-300"
-                                }`}
-                            >
-                              {team.value}%
-                            </span>
+                            <p className="mt-2 text-sm text-lime-100/70">
+                              Maior Posse Média:{" "}
+
+                              <span className="font-bold text-white">
+                                {possessionLeader}
+                              </span>
+                            </p>
+
                           </div>
 
-                          {/* Barra */}
-                          <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+                          {/* Círculo */}
+                          <div className="relative h-[88px] w-[88px]">
+
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${team.position === 1
-                                ? "bg-lime-400"
-                                : "bg-zinc-700"
-                                }`}
+                              className="h-full w-full rounded-full"
                               style={{
-                                width: `${team.value}%`,
+                                background: `conic-gradient(
+                  #a3ff12 ${possessionAverage * 3.6}deg,
+                  #3f4146 0deg
+                )`,
                               }}
                             />
+
+                            <div className="absolute inset-[8px] flex items-center justify-center rounded-full bg-zinc-900">
+
+                              <span className="text-sm font-bold text-lime-400">
+                                {Math.round(
+                                  possessionAverage
+                                )}%
+                              </span>
+
+                            </div>
+
                           </div>
+
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Ranking */}
+                        <div className="mt-8 space-y-5">
+
+                          {possessionRanking.map(
+                            (team) => (
+
+                              <div key={team.team}>
+
+                                {/* Nome + porcentagem */}
+                                <div className="mb-2 flex items-center justify-between">
+
+                                  <span className="text-sm font-semibold text-white">
+                                    {team.position}.{" "}
+                                    {team.team}
+                                  </span>
+
+                                  <span
+                                    className={`text-sm font-bold ${team.position === 1
+                                      ? "text-lime-400"
+                                      : "text-zinc-300"
+                                      }`}
+                                  >
+                                    {team.value}%
+                                  </span>
+
+                                </div>
+
+                                {/* Barra */}
+                                <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-500 ${team.position === 1
+                                      ? "bg-lime-400"
+                                      : "bg-zinc-700"
+                                      }`}
+                                    style={{
+                                      width: `${team.value}%`,
+                                    }}
+                                  />
+
+                                </div>
+
+                              </div>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </>
+
+                    )}
+
                   </div>
+
                 </div>
 
                 {/* FAIR PLAY & FALTAS */}

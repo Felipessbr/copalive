@@ -453,3 +453,583 @@ export async function getLeagueGoalKeepers(leagueId, season) {
     return [];
   }
 }
+
+function chunkArray(array, size) {
+  const chunks = [];
+
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+
+  return chunks;
+}
+
+export async function getLeaguePossession(
+  leagueId,
+  season,
+  matches
+) {
+  try {
+    console.log(
+      "🔵 BUSCANDO POSSE DE BOLA DA LIGA"
+    );
+
+    console.log("League ID:", leagueId);
+    console.log("Season:", season);
+
+    if (!matches || matches.length === 0) {
+      console.warn(
+        "⚠️ Nenhum jogo encontrado para calcular posse."
+      );
+
+      return [];
+    }
+
+    const MAX_NEW_REQUESTS = 5;
+
+    const REQUEST_DELAY = 8000;
+
+    const wait = (ms) =>
+      new Promise((resolve) =>
+        setTimeout(resolve, ms)
+      );
+
+    const finishedMatches =
+      matches.filter((match) => {
+        const status =
+          match.fixture?.status?.short;
+
+        return (
+          status === "FT" ||
+          status === "AET" ||
+          status === "PEN"
+        );
+      });
+
+    console.log(
+      "⚽ Jogos finalizados:",
+      finishedMatches.length
+    );
+
+    if (finishedMatches.length === 0) {
+      console.warn(
+        "⚠️ Nenhum jogo finalizado encontrado."
+      );
+
+      return [];
+    }
+
+    // =====================================================
+    // CACHE
+    // =====================================================
+
+    const cacheKey =
+      `copalive-possession-results-${leagueId}-${season}`;
+
+    let cachedPossession = {};
+
+    const cached =
+      sessionStorage.getItem(cacheKey);
+
+    if (cached) {
+      try {
+        cachedPossession =
+          JSON.parse(cached);
+
+        console.log(
+          "🟡 CACHE DE POSSE CARREGADO:",
+          Object.keys(
+            cachedPossession
+          ).length,
+          "partidas"
+        );
+
+      } catch (error) {
+        console.warn(
+          "⚠️ Cache de posse inválido. Limpando."
+        );
+
+        sessionStorage.removeItem(
+          cacheKey
+        );
+
+        cachedPossession = {};
+      }
+    }
+
+    // =====================================================
+    // IDENTIFICA PARTIDAS QUE AINDA NÃO FORAM BUSCADAS
+    // =====================================================
+
+    const matchesToFetch =
+      finishedMatches.filter(
+        (match) => {
+          const fixtureId =
+            match.fixture?.id;
+
+          return (
+            fixtureId &&
+            !cachedPossession[
+              fixtureId
+            ]
+          );
+        }
+      );
+
+    console.log(
+      "📊 Partidas já armazenadas:",
+      Object.keys(
+        cachedPossession
+      ).length
+    );
+
+    console.log(
+      "📊 Partidas ainda não processadas:",
+      matchesToFetch.length
+    );
+
+    // =====================================================
+    // LIMITA A EXECUÇÃO ATUAL
+    // =====================================================
+
+    const matchesForThisRequest =
+      matchesToFetch.slice(
+        0,
+        MAX_NEW_REQUESTS
+      );
+
+    console.log(
+      "🚀 Partidas nesta execução:",
+      matchesForThisRequest.length
+    );
+
+    // =====================================================
+    // BUSCA AS ESTATÍSTICAS
+    // =====================================================
+
+    for (
+      let i = 0;
+      i < matchesForThisRequest.length;
+      i++
+    ) {
+      const match =
+        matchesForThisRequest[i];
+
+      const fixtureId =
+        match.fixture?.id;
+
+      console.log(
+        `📊 POSSE ${i + 1}/${matchesForThisRequest.length} - Fixture ${fixtureId}`
+      );
+
+      // ---------------------------------------------------
+      // ESPERA ENTRE REQUISIÇÕES
+      // ---------------------------------------------------
+
+      if (i > 0) {
+        console.log(
+          `⏳ Aguardando ${REQUEST_DELAY / 1000}s antes da próxima requisição...`
+        );
+
+        await wait(
+          REQUEST_DELAY
+        );
+      }
+
+      try {
+        // -------------------------------------------------
+        // CONSULTA ESTATÍSTICAS DA PARTIDA
+        // -------------------------------------------------
+
+        const response =
+          await api.get(
+            "/fixtures/statistics",
+            {
+              params: {
+                fixture:
+                  fixtureId,
+              },
+            }
+          );
+
+        console.log(
+          `📡 Estatísticas fixture ${fixtureId}:`,
+          response.data
+        );
+
+        // -------------------------------------------------
+        // VERIFICA ERROS DA API
+        // -------------------------------------------------
+
+        if (
+          response.data?.errors &&
+          Object.keys(
+            response.data.errors
+          ).length > 0
+        ) {
+          console.error(
+            `❌ ERRO API - Fixture ${fixtureId}:`,
+            response.data.errors
+          );
+
+          const errorText =
+            JSON.stringify(
+              response.data.errors
+            ).toLowerCase();
+
+          // Se atingir limite, para imediatamente.
+          if (
+            errorText.includes(
+              "ratelimit"
+            ) ||
+            errorText.includes(
+              "rate limit"
+            ) ||
+            errorText.includes(
+              "too many"
+            ) ||
+            errorText.includes(
+              "quota"
+            ) ||
+            errorText.includes(
+              "limit"
+            )
+          ) {
+            console.warn(
+              "🛑 LIMITE DA API DETECTADO."
+            );
+
+            console.warn(
+              "🛑 Interrompendo esta execução."
+            );
+
+            break;
+          }
+
+          continue;
+        }
+
+        // -------------------------------------------------
+        // PEGA AS ESTATÍSTICAS
+        // -------------------------------------------------
+
+        const statistics =
+          response.data?.response ||
+          [];
+
+        if (
+          !Array.isArray(
+            statistics
+          ) ||
+          statistics.length === 0
+        ) {
+          console.warn(
+            `⚠️ Fixture ${fixtureId} não possui estatísticas.`
+          );
+
+          // Marca como processado.
+          cachedPossession[
+            fixtureId
+          ] = {
+            fixtureId,
+            hasPossession: false,
+          };
+
+          sessionStorage.setItem(
+            cacheKey,
+            JSON.stringify(
+              cachedPossession
+            )
+          );
+
+          continue;
+        }
+
+        // -------------------------------------------------
+        // EXTRAI A POSSE DOS TIMES
+        // -------------------------------------------------
+
+        const fixturePossession =
+          [];
+
+        for (
+          const teamStats of statistics
+        ) {
+          const teamId =
+            teamStats.team?.id;
+
+          const teamName =
+            teamStats.team?.name;
+
+          const possessionStat =
+            teamStats.statistics?.find(
+              (stat) =>
+                stat.type ===
+                "Ball Possession"
+            );
+
+          if (
+            !teamId ||
+            !teamName ||
+            !possessionStat?.value
+          ) {
+            continue;
+          }
+
+          const possessionValue =
+            parseFloat(
+              String(
+                possessionStat.value
+              )
+                .replace("%", "")
+                .replace(",", ".")
+            );
+
+          if (
+            !Number.isFinite(
+              possessionValue
+            )
+          ) {
+            continue;
+          }
+
+          fixturePossession.push({
+            teamId,
+            teamName,
+            possession:
+              possessionValue,
+          });
+        }
+
+        // -------------------------------------------------
+        // SALVA POSSE ENCONTRADA
+        // -------------------------------------------------
+
+        if (
+          fixturePossession.length > 0
+        ) {
+          cachedPossession[
+            fixtureId
+          ] = {
+            fixtureId,
+            hasPossession: true,
+            teams:
+              fixturePossession,
+          };
+
+          console.log(
+            `⚽ Posse encontrada - Fixture ${fixtureId}:`,
+            fixturePossession
+          );
+
+        } else {
+          cachedPossession[
+            fixtureId
+          ] = {
+            fixtureId,
+            hasPossession: false,
+          };
+
+          console.warn(
+            `⚠️ Fixture ${fixtureId} não possui Ball Possession.`
+          );
+        }
+
+        // -------------------------------------------------
+        // SALVA CACHE
+        // -------------------------------------------------
+
+        sessionStorage.setItem(
+          cacheKey,
+          JSON.stringify(
+            cachedPossession
+          )
+        );
+
+        console.log(
+          "💾 Resultado salvo no cache."
+        );
+
+      } catch (error) {
+        console.error(
+          `🔴 Erro ao buscar fixture ${fixtureId}:`,
+          error.response?.data ||
+            error
+        );
+
+        // -----------------------------------------------
+        // DETECTA ERRO DE LIMITE
+        // -----------------------------------------------
+
+        const errorData =
+          error.response?.data ||
+          error;
+
+        const errorText =
+          JSON.stringify(
+            errorData
+          ).toLowerCase();
+
+        if (
+          errorText.includes(
+            "ratelimit"
+          ) ||
+          errorText.includes(
+            "rate limit"
+          ) ||
+          errorText.includes(
+            "too many"
+          ) ||
+          errorText.includes(
+            "quota"
+          ) ||
+          errorText.includes(
+            "limit"
+          ) ||
+          errorText.includes(
+            "network error"
+          )
+        ) {
+          console.warn(
+            "🛑 API bloqueou ou limitou a requisição."
+          );
+
+          console.warn(
+            "🛑 Interrompendo o processamento."
+          );
+
+          break;
+        }
+      }
+    }
+
+    // =====================================================
+    // CALCULA A MÉDIA DE POSSE POR TIME
+    // =====================================================
+
+    const teamPossession =
+      new Map();
+
+    for (
+      const fixtureData of Object.values(
+        cachedPossession
+      )
+    ) {
+      if (
+        !fixtureData.hasPossession ||
+        !fixtureData.teams
+      ) {
+        continue;
+      }
+
+      for (
+        const team of fixtureData.teams
+      ) {
+        const current =
+          teamPossession.get(
+            team.teamId
+          ) || {
+            teamId:
+              team.teamId,
+
+            teamName:
+              team.teamName,
+
+            totalPossession: 0,
+
+            matches: 0,
+          };
+
+        current.totalPossession +=
+          team.possession;
+
+        current.matches += 1;
+
+        teamPossession.set(
+          team.teamId,
+          current
+        );
+      }
+    }
+
+    // =====================================================
+    // FORMATA RESULTADO
+    // =====================================================
+
+    const formattedPossession =
+      [
+        ...teamPossession.values(),
+      ]
+        .map((team) => ({
+          teamId:
+            team.teamId,
+
+          teamName:
+            team.teamName,
+
+          matches:
+            team.matches,
+
+          averagePossession:
+            Number(
+              (
+                team.totalPossession /
+                team.matches
+              ).toFixed(1)
+            ),
+        }))
+        .sort(
+          (a, b) =>
+            b.averagePossession -
+            a.averagePossession
+        );
+
+    // =====================================================
+    // LOGS FINAIS
+    // =====================================================
+
+    console.log(
+      "📦 Partidas armazenadas no cache:",
+      Object.keys(
+        cachedPossession
+      ).length
+    );
+
+    console.log(
+      "⚽ TIMES COM POSSE:",
+      formattedPossession.length
+    );
+
+    console.log(
+      "⚽ POSSE DE BOLA FORMATADA:",
+      formattedPossession
+    );
+
+    const remaining =
+      matchesToFetch.length -
+      matchesForThisRequest.length;
+
+    if (remaining > 0) {
+      console.log(
+        "ℹ️ Ainda existem",
+        remaining,
+        "partidas para processar."
+      );
+
+      console.log(
+        "🔄 Elas serão processadas nas próximas execuções."
+      );
+    }
+
+    return formattedPossession;
+
+  } catch (error) {
+    console.error(
+      "🔴 ERRO AO BUSCAR POSSE DE BOLA:",
+      error.response?.data ||
+        error
+    );
+
+    return [];
+  }
+}
