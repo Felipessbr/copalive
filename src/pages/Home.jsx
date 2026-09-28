@@ -10,6 +10,8 @@ import SkeletonCard from "../components/ui/SkeletonCard";
 import FeaturedCarousel from "../components/home/FeaturedCarousel";
 import LeagueFilter from "../components/home/LeagueFilter";
 
+import { GiSoccerBall } from "react-icons/gi";
+
 import useScrollDirection from "../hooks/useScrollDirection";
 
 import { leagues } from "../components/constants/leagues";
@@ -78,7 +80,7 @@ export default function Home() {
         <FeaturedCarousel />
 
         <SectionTitle
-          title="⚡ Jogos"
+          title= "Ligas"
           subtitle={
             selectedLeagueName
               ? `Explorar ${selectedLeagueName}`

@@ -324,6 +324,75 @@ export async function getLeagueTopAssists(leagueId, season) {
   }
 }
 
+export async function getLeagueTopYellowCards(
+    leagueId,
+    season
+) {
+    try {
+        console.log(
+            "🟡 INICIANDO BUSCA DE CARTÕES AMARELOS"
+        );
+
+        const cacheKey =
+            `copalive-topyellowcards-${leagueId}-${season}`;
+
+        console.log(
+            "🟡 CACHE KEY:",
+            cacheKey
+        );
+
+        console.log(
+            "🟡 ANTES DA REQUISIÇÃO"
+        );
+
+        const response = await cachedApiRequest(
+            cacheKey,
+            () =>
+                api.get("/players/topyellowcards", {
+                    params: {
+                        league: leagueId,
+                        season: season,
+                    },
+                })
+        );
+
+        console.log(
+            "🟢 RESPOSTA RECEBIDA:",
+            response
+        );
+
+        console.log(
+            "🟢 STATUS TOP YELLOW CARDS:",
+            response.status
+        );
+
+        console.log(
+            "🟢 TOTAL CARTÕES AMARELOS:",
+            response.data.results
+        );
+
+        console.log(
+            "🟡 CARTÕES AMARELOS RECEBIDOS:",
+            response.data.response
+        );
+
+        return response.data.response || [];
+
+    } catch (error) {
+        console.error(
+            "🔴 ERRO TOP YELLOW CARDS:",
+            error
+        );
+
+        console.error(
+            "🔴 DADOS DO ERRO:",
+            error.response?.data
+        );
+
+        return [];
+    }
+}
+
 export async function getLeagueGoalKeepers(leagueId, season) {
   try {
     console.log("🔵 Buscando goleiros da liga");
@@ -570,7 +639,7 @@ export async function getLeaguePossession(
           return (
             fixtureId &&
             !cachedPossession[
-              fixtureId
+            fixtureId
             ]
           );
         }
@@ -854,7 +923,7 @@ export async function getLeaguePossession(
         console.error(
           `🔴 Erro ao buscar fixture ${fixtureId}:`,
           error.response?.data ||
-            error
+          error
         );
 
         // -----------------------------------------------
@@ -1027,7 +1096,7 @@ export async function getLeaguePossession(
     console.error(
       "🔴 ERRO AO BUSCAR POSSE DE BOLA:",
       error.response?.data ||
-        error
+      error
     );
 
     return [];

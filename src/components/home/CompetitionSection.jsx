@@ -1,3 +1,6 @@
+import { GrTrophy } from "react-icons/gr";
+
+
 export default function CompetitionSection({
     competition,
     children,
@@ -8,7 +11,7 @@ export default function CompetitionSection({
       <div className="flex items-center gap-2 mb-4">
 
         <span className="text-xl">
-          🏆
+          <GrTrophy className="h-5 w-5 text-lime-400" />
         </span>
 
         <h2 className="text-lg font-bold text-white">

@@ -17,6 +17,7 @@ import useLeagueTopAssists from "../hooks/useLeagueTopAssists";
 import useLeagueGoalkeepers from "../hooks/useLeagueGoalkeepers";
 import useLeaguePossession from "../hooks/useLeaguePossession";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
+import useLeagueTopYellowCards from "../hooks/useLeagueTopYellowCards";
 import calculateLeagueStatistics from "../utils/calculateLeagueStatistics";
 import leagueStatistics from "../data/leagueStatistics";
 
@@ -121,7 +122,14 @@ export default function LeagueDetails() {
     error: goalkeepersError,
   } = useLeagueGoalkeepers(id, 2024);
 
-
+  const {
+    topYellowCards,
+    loading: yellowCardsLoading,
+    error: yellowCardsError,
+  } = useLeagueTopYellowCards(
+    id,
+    2024
+  );
   const statistics = calculateLeagueStatistics(matches);
 
   const displayedMatches = matches.map((match) => ({
