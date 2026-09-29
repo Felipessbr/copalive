@@ -1,31 +1,26 @@
 import { useEffect, useState } from "react";
 
-import {
-    getLeagueTopYellowCards,
-} from "../services/footballApi";
+import { getLeagueFairPlay } from "../services/footballApi";
 
-export default function useLeagueTopYellowCards(
+export default function useLeagueFairPlay(
     leagueId,
-    season
+    season,
+    standings
 ) {
-    const [yellowCards, setYellowCards] =
-        useState([]);
-
-    const [loading, setLoading] =
-        useState(true);
-
-    const [error, setError] =
-        useState(null);
+    const [fairPlay, setFairPlay] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
 
-        async function loadYellowCards() {
+        async function loadFairPlay() {
             try {
                 setLoading(true);
+                setError(null);
 
                 console.log(
-                    "========== CARREGANDO CARTÕES AMARELOS =========="
+                    "========== CARREGANDO FAIR PLAY =========="
                 );
 
                 console.log(
@@ -38,14 +33,20 @@ export default function useLeagueTopYellowCards(
                     season
                 );
 
+                console.log(
+                    "Times disponíveis:",
+                    standings?.length
+                );
+
                 const data =
-                    await getLeagueTopYellowCards(
+                    await getLeagueFairPlay(
                         leagueId,
-                        season
+                        season,
+                        standings
                     );
 
                 console.log(
-                    "Cartões amarelos recebidos:",
+                    "Fair Play recebido:",
                     data
                 );
 
@@ -57,11 +58,11 @@ export default function useLeagueTopYellowCards(
                     data &&
                     data.length > 0
                 ) {
-                    setYellowCards(data);
+                    setFairPlay(data);
                     setError(null);
                 } else {
                     console.warn(
-                        "⚠️ API retornou 0 cartões amarelos."
+                        "⚠️ API retornou 0 dados de Fair Play."
                     );
                 }
 
@@ -71,12 +72,12 @@ export default function useLeagueTopYellowCards(
                 }
 
                 console.error(
-                    "Erro ao carregar cartões amarelos:",
+                    "Erro ao carregar Fair Play:",
                     error
                 );
 
                 setError(
-                    "Não foi possível carregar os cartões amarelos."
+                    "Não foi possível carregar o Fair Play."
                 );
 
             } finally {
@@ -88,19 +89,21 @@ export default function useLeagueTopYellowCards(
 
         if (
             leagueId &&
-            season
+            season &&
+            standings &&
+            standings.length > 0
         ) {
-            loadYellowCards();
+            loadFairPlay();
         }
 
         return () => {
             cancelled = true;
         };
 
-    }, [leagueId, season]);
+    }, [leagueId, season, standings]);
 
     return {
-        yellowCards,
+        fairPlay,
         loading,
         error,
     };

@@ -1,3 +1,4 @@
+import { data } from "react-router-dom";
 import api from "./api";
 import { ENDPOINTS } from "./endpoints";
 
@@ -325,72 +326,318 @@ export async function getLeagueTopAssists(leagueId, season) {
 }
 
 export async function getLeagueTopYellowCards(
-    leagueId,
-    season
+  leagueId,
+  season
 ) {
-    try {
-        console.log(
-            "🟡 INICIANDO BUSCA DE CARTÕES AMARELOS"
+  try {
+    console.log(
+      "🟡 INICIANDO BUSCA DE CARTÕES AMARELOS"
+    );
+
+    const cacheKey =
+      `copalive-topyellowcards-${leagueId}-${season}`;
+
+    console.log(
+      "🟡 CACHE KEY:",
+      cacheKey
+    );
+
+    console.log(
+      "🟡 ANTES DA REQUISIÇÃO"
+    );
+
+    const response =
+      await cachedApiRequest(
+        cacheKey,
+        () =>
+          api.get(
+            "/players/topyellowcards",
+            {
+              params: {
+                league: leagueId,
+                season: season,
+              },
+            }
+          )
+      );
+
+    console.log(
+      "🟢 RESPOSTA RECEBIDA:",
+      response
+    );
+
+    console.log(
+      "🟢 STATUS TOP YELLOW CARDS:",
+      response.status
+    );
+
+    console.log(
+      "🟢 TOTAL CARTÕES AMARELOS:",
+      response.data.results
+    );
+
+    const data =
+      response.data.response || [];
+
+    console.log(
+      "🟡 CARTÕES AMARELOS RECEBIDOS:",
+      data
+    );
+
+    const formattedYellowCards =
+      data
+        .map((player) => {
+          const stats =
+            player.statistics?.find(
+              (stat) =>
+                stat.league?.id ===
+                Number(leagueId)
+            ) ||
+            player.statistics?.[0];
+
+          return {
+            id: player.player?.id,
+            name: player.player?.name,
+            photo: player.player?.photo,
+
+            teamId:
+              stats?.team?.id,
+
+            team:
+              stats?.team?.name,
+
+            teamLogo:
+              stats?.team?.logo,
+
+            yellowCards:
+              stats?.cards?.yellow || 0,
+
+            yellowRedCards:
+              stats?.cards?.yellowred || 0,
+
+            redCards:
+              stats?.cards?.red || 0,
+          };
+        })
+        .filter(
+          (player) =>
+            player.yellowCards > 0
+        )
+        .sort(
+          (a, b) =>
+            b.yellowCards -
+            a.yellowCards
         );
 
-        const cacheKey =
-            `copalive-topyellowcards-${leagueId}-${season}`;
+    console.log(
+      "🟨 CARTÕES AMARELOS FORMATADOS:",
+      formattedYellowCards
+    );
 
-        console.log(
-            "🟡 CACHE KEY:",
-            cacheKey
-        );
+    return formattedYellowCards;
 
-        console.log(
-            "🟡 ANTES DA REQUISIÇÃO"
-        );
+  } catch (error) {
+    console.error(
+      "🔴 ERRO TOP YELLOW CARDS:",
+      error
+    );
 
-        const response = await cachedApiRequest(
-            cacheKey,
-            () =>
-                api.get("/players/topyellowcards", {
-                    params: {
-                        league: leagueId,
-                        season: season,
-                    },
-                })
-        );
+    console.error(
+      "🔴 DADOS DO ERRO:",
+      error.response?.data
+    );
 
-        console.log(
-            "🟢 RESPOSTA RECEBIDA:",
-            response
-        );
+    return [];
+  }
+}
 
-        console.log(
-            "🟢 STATUS TOP YELLOW CARDS:",
-            response.status
-        );
 
-        console.log(
-            "🟢 TOTAL CARTÕES AMARELOS:",
-            response.data.results
-        );
+async function getFixtureStatistics(fixtureId) {
+  const cacheKey = `copalive-fixture-statistics-${fixtureId}`;
 
-        console.log(
-            "🟡 CARTÕES AMARELOS RECEBIDOS:",
-            response.data.response
-        );
+  try {
+    const response = await cachedApiRequest(
+      cacheKey,
+      () =>
+        api.get("/fixtures/statistics", {
+          params: {
+            fixture: fixtureId,
+          },
+        })
+    );
 
-        return response.data.response || [];
+    return response.data?.response || [];
+  } catch (error) {
+    console.error(
+      `❌ Erro ao buscar estatísticas do fixture ${fixtureId}:`,
+      error.response?.data || error
+    );
 
-    } catch (error) {
-        console.error(
-            "🔴 ERRO TOP YELLOW CARDS:",
-            error
-        );
+    return [];
+  }
+}
 
-        console.error(
-            "🔴 DADOS DO ERRO:",
-            error.response?.data
-        );
+export async function getLeagueFairPlay(
+  leagueId,
+  season,
+  standings
+) {
+  try {
+    console.log("🔵 BUSCANDO FAIR PLAY DA LIGA");
+    console.log("League ID:", leagueId);
+    console.log("Season:", season);
 
-        return [];
+    if (!standings || standings.length === 0) {
+      console.warn(
+        "⚠️ Nenhuma classificação disponível para Fair Play."
+      );
+
+      return [];
     }
+
+    const teams = standings
+      .map((item) => item.team)
+      .filter((team) => team?.id);
+
+    console.log(
+      "⚽ Times encontrados para Fair Play:",
+      teams.length
+    );
+
+    const fairPlay = [];
+
+    for (let i = 0; i < teams.length; i++) {
+      const team = teams[i];
+
+      console.log(
+        `🟨 FAIR PLAY ${i + 1}/${teams.length} - ${team.name}`
+      );
+
+      try {
+        const cacheKey =
+          `copalive-team-statistics-${leagueId}-${season}-${team.id}`;
+
+        const response = await api.get(
+          "/teams/statistics",
+          {
+            params: {
+              league: leagueId,
+              season: season,
+              team: team.id,
+            },
+          }
+        );
+
+        console.log(
+          "📡 RESPOSTA BRUTA FAIR PLAY:",
+          response.data
+        );
+
+        const data =
+          response.data?.response;
+
+        if (!data) {
+          console.warn(
+            `⚠️ Sem estatísticas para ${team.name}`
+          );
+
+          continue;
+        }
+
+        console.log(
+          `📊 Estatísticas de ${team.name}:`,
+          data
+        );
+
+        const yellowCards =
+          data.cards?.yellow || {};
+
+        const redCards =
+          data.cards?.red || {};
+
+        const totalYellowCards =
+          Object.values(yellowCards).reduce(
+            (total, value) =>
+              total + (Number(value) || 0),
+            0
+          );
+
+        const totalRedCards =
+          Object.values(redCards).reduce(
+            (total, value) =>
+              total + (Number(value) || 0),
+            0
+          );
+
+        const matchesPlayed =
+          data.fixtures?.played?.total || 0;
+
+        const fouls =
+          data.cards?.yellow
+            ? Object.values(data.cards.yellow)
+              .reduce(
+                (total, value) =>
+                  total + (Number(value) || 0),
+                0
+              )
+            : 0;
+
+        fairPlay.push({
+          teamId: team.id,
+          teamName: team.name,
+          teamLogo: team.logo,
+
+          matches: matchesPlayed,
+
+          yellowCards: totalYellowCards,
+          redCards: totalRedCards,
+
+          fouls: fouls,
+
+          averageYellowCards:
+            matchesPlayed > 0
+              ? Number(
+                (
+                  totalYellowCards /
+                  matchesPlayed
+                ).toFixed(2)
+              )
+              : 0,
+
+          averageRedCards:
+            matchesPlayed > 0
+              ? Number(
+                (
+                  totalRedCards /
+                  matchesPlayed
+                ).toFixed(2)
+              )
+              : 0,
+        });
+
+      } catch (error) {
+        console.error(
+          `❌ Erro Fair Play - ${team.name}:`,
+          error.response?.data || error
+        );
+      }
+    }
+
+    console.log(
+      "🟨 FAIR PLAY FORMATADO:",
+      fairPlay
+    );
+
+    return fairPlay;
+
+  } catch (error) {
+    console.error(
+      "🔴 ERRO AO BUSCAR FAIR PLAY:",
+      error.response?.data || error
+    );
+
+    return [];
+  }
 }
 
 export async function getLeagueGoalKeepers(leagueId, season) {
@@ -657,10 +904,6 @@ export async function getLeaguePossession(
       matchesToFetch.length
     );
 
-    // =====================================================
-    // LIMITA A EXECUÇÃO ATUAL
-    // =====================================================
-
     const matchesForThisRequest =
       matchesToFetch.slice(
         0,
@@ -671,10 +914,6 @@ export async function getLeaguePossession(
       "🚀 Partidas nesta execução:",
       matchesForThisRequest.length
     );
-
-    // =====================================================
-    // BUSCA AS ESTATÍSTICAS
-    // =====================================================
 
     for (
       let i = 0;
@@ -715,8 +954,7 @@ export async function getLeaguePossession(
             "/fixtures/statistics",
             {
               params: {
-                fixture:
-                  fixtureId,
+                fixture: fixtureId,
               },
             }
           );
@@ -727,14 +965,39 @@ export async function getLeaguePossession(
         );
 
         // -------------------------------------------------
-        // VERIFICA ERROS DA API
+        // DEBUG FAIR PLAY
         // -------------------------------------------------
+
+        const fixtureStatistics =
+          response.data?.response || [];
+
+        if (
+          Array.isArray(fixtureStatistics) &&
+          fixtureStatistics.length > 0
+        ) {
+          console.log(
+            `🟨 FAIR PLAY - Fixture ${fixtureId}:`,
+            fixtureStatistics.map((teamStats) => ({
+              team: teamStats.team?.name,
+
+              fouls: teamStats.statistics?.find(
+                (stat) => stat.type === "Fouls"
+              )?.value,
+
+              yellowCards: teamStats.statistics?.find(
+                (stat) => stat.type === "Yellow Cards"
+              )?.value,
+
+              redCards: teamStats.statistics?.find(
+                (stat) => stat.type === "Red Cards"
+              )?.value,
+            }))
+          );
+        }
 
         if (
           response.data?.errors &&
-          Object.keys(
-            response.data.errors
-          ).length > 0
+          Object.keys(response.data.errors).length > 0
         ) {
           console.error(
             `❌ ERRO API - Fixture ${fixtureId}:`,
@@ -748,21 +1011,11 @@ export async function getLeaguePossession(
 
           // Se atingir limite, para imediatamente.
           if (
-            errorText.includes(
-              "ratelimit"
-            ) ||
-            errorText.includes(
-              "rate limit"
-            ) ||
-            errorText.includes(
-              "too many"
-            ) ||
-            errorText.includes(
-              "quota"
-            ) ||
-            errorText.includes(
-              "limit"
-            )
+            errorText.includes("ratelimit") ||
+            errorText.includes("rate limit") ||
+            errorText.includes("too many") ||
+            errorText.includes("quota") ||
+            errorText.includes("limit")
           ) {
             console.warn(
               "🛑 LIMITE DA API DETECTADO."
@@ -926,10 +1179,6 @@ export async function getLeaguePossession(
           error
         );
 
-        // -----------------------------------------------
-        // DETECTA ERRO DE LIMITE
-        // -----------------------------------------------
-
         const errorData =
           error.response?.data ||
           error;
@@ -971,10 +1220,6 @@ export async function getLeaguePossession(
         }
       }
     }
-
-    // =====================================================
-    // CALCULA A MÉDIA DE POSSE POR TIME
-    // =====================================================
 
     const teamPossession =
       new Map();
@@ -1021,9 +1266,6 @@ export async function getLeaguePossession(
       }
     }
 
-    // =====================================================
-    // FORMATA RESULTADO
-    // =====================================================
 
     const formattedPossession =
       [
@@ -1052,10 +1294,6 @@ export async function getLeaguePossession(
             b.averagePossession -
             a.averagePossession
         );
-
-    // =====================================================
-    // LOGS FINAIS
-    // =====================================================
 
     console.log(
       "📦 Partidas armazenadas no cache:",
