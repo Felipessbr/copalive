@@ -484,8 +484,6 @@ export async function getLeagueFairPlay(
 ) {
   try {
     console.log("🔵 BUSCANDO FAIR PLAY DA LIGA");
-    console.log("League ID:", leagueId);
-    console.log("Season:", season);
 
     if (!standings || standings.length === 0) {
       console.warn(
@@ -495,27 +493,23 @@ export async function getLeagueFairPlay(
       return [];
     }
 
-    const teams = standings
-      .map((item) => item.team)
-      .filter((team) => team?.id);
+    const fairPlayData = [];
 
-    console.log(
-      "⚽ Times encontrados para Fair Play:",
-      teams.length
-    );
+    for (const item of standings) {
+      const team = item?.team;
 
-    const fairPlay = [];
-
-    for (let i = 0; i < teams.length; i++) {
-      const team = teams[i];
-
-      console.log(
-        `🟨 FAIR PLAY ${i + 1}/${teams.length} - ${team.name}`
-      );
+      if (!team?.id) {
+        continue;
+      }
 
       try {
-        const cacheKey =
-          `copalive-team-statistics-${leagueId}-${season}-${team.id}`;
+        console.log(
+          `🟨 Buscando Fair Play: ${team.name}`
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 2000)
+        );
 
         const response = await api.get(
           "/teams/statistics",
@@ -528,13 +522,17 @@ export async function getLeagueFairPlay(
           }
         );
 
+        const data = response.data?.response;
+
         console.log(
-          "📡 RESPOSTA BRUTA FAIR PLAY:",
+          `📦 RESPOSTA FAIR PLAY - ${team.name}:`,
           response.data
         );
 
-        const data =
-          response.data?.response;
+        console.log(
+          `📊 DADOS EXTRAÍDOS - ${team.name}:`,
+          data
+        );
 
         if (!data) {
           console.warn(
@@ -544,91 +542,69 @@ export async function getLeagueFairPlay(
           continue;
         }
 
-        console.log(
-          `📊 Estatísticas de ${team.name}:`,
-          data
-        );
+        const matches = data?.fixtures?.played?.total;
 
         const yellowCards =
-          data.cards?.yellow || {};
+          Object.values(data?.cards?.yellow || {})
+            .reduce(
+              (total, card) =>
+                total + (card?.total || 0),
+              0
+            );
 
         const redCards =
-          data.cards?.red || {};
+          Object.values(data?.cards?.red || {})
+            .reduce(
+              (total, card) =>
+                total + (card?.total || 0),
+              0
+            );
 
-        const totalYellowCards =
-          Object.values(yellowCards).reduce(
-            (total, value) =>
-              total + (Number(value) || 0),
-            0
+        const averageCards =
+          matches > 0
+            ? ((yellowCards + redCards) / matches).toFixed(1)
+            : "0.0";
+
+        if (!matches) {
+          console.warn(
+            `⚠️ Dados incompletos de Fair Play para ${team.name}. Ignorando.`
           );
 
-        const totalRedCards =
-          Object.values(redCards).reduce(
-            (total, value) =>
-              total + (Number(value) || 0),
-            0
-          );
+          continue;
+        }
 
-        const matchesPlayed =
-          data.fixtures?.played?.total || 0;
-
-        const fouls =
-          data.cards?.yellow
-            ? Object.values(data.cards.yellow)
-              .reduce(
-                (total, value) =>
-                  total + (Number(value) || 0),
-                0
-              )
-            : 0;
-
-        fairPlay.push({
+        fairPlayData.push({
           teamId: team.id,
-          teamName: team.name,
-          teamLogo: team.logo,
-
-          matches: matchesPlayed,
-
-          yellowCards: totalYellowCards,
-          redCards: totalRedCards,
-
-          fouls: fouls,
-
-          averageYellowCards:
-            matchesPlayed > 0
-              ? Number(
-                (
-                  totalYellowCards /
-                  matchesPlayed
-                ).toFixed(2)
-              )
-              : 0,
-
-          averageRedCards:
-            matchesPlayed > 0
-              ? Number(
-                (
-                  totalRedCards /
-                  matchesPlayed
-                ).toFixed(2)
-              )
-              : 0,
+          team: team.name,
+          logo: team.logo,
+          matches,
+          yellowCards,
+          redCards,
+          averageCards,
         });
 
-      } catch (error) {
-        console.error(
-          `❌ Erro Fair Play - ${team.name}:`,
-          error.response?.data || error
+        console.log(
+          `✅ Fair Play recebido: ${team.name}`
         );
+
+      } catch (error) {
+        console.warn(
+          `⚠️ Falha no Fair Play de ${team.name}. Pulando para o próximo time.`
+        );
+
+        console.warn(
+          error.response?.data || error.message
+        );
+
+        continue;
       }
     }
-
     console.log(
       "🟨 FAIR PLAY FORMATADO:",
-      fairPlay
+      fairPlayData
     );
 
-    return fairPlay;
+    return fairPlayData;
 
   } catch (error) {
     console.error(

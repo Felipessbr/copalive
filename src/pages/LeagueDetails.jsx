@@ -106,15 +106,40 @@ export default function LeagueDetails() {
     matches
   );
 
-const {
+  const {
     fairPlay,
     loading: fairPlayLoading,
     error: fairPlayError,
-} = useLeagueFairPlay(
+  } = useLeagueFairPlay(
     id,
     2024,
     standings
-);
+  );
+
+  const validFairPlay = fairPlay.filter(
+    (item) =>
+      item.matches > 0 &&
+      item.averageCards !== undefined
+  );
+
+  const mostDisciplined =
+    validFairPlay.length > 0
+      ? [...validFairPlay].sort(
+        (a, b) =>
+          Number(a.averageCards) -
+          Number(b.averageCards)
+      )[0]
+      : null;
+
+  const mostFouls =
+    validFairPlay.length > 0
+      ? [...validFairPlay].sort(
+        (a, b) =>
+          Number(b.averageCards) -
+          Number(a.averageCards)
+      )[0]
+      : null;
+
   const {
     topScorers,
     iLoading: topScorersLoading,
@@ -133,18 +158,18 @@ const {
     error: goalkeepersError,
   } = useLeagueGoalkeepers(id, 2024);
 
-const {
+  const {
     yellowCards,
     loading: yellowCardsLoading,
     error: yellowCardsError,
-} = useLeagueTopYellowCards(id, 2024);
+  } = useLeagueTopYellowCards(id, 2024);
 
-console.log(
+  console.log(
     "🟨 Cartões amarelos no LeagueDetails:",
     yellowCards
-);
+  );
 
-  
+
   const statistics = calculateLeagueStatistics(matches);
 
   const displayedMatches = matches.map((match) => ({
@@ -1192,8 +1217,11 @@ console.log(
                 </div>
 
                 {/* FAIR PLAY & FALTAS */}
+
                 <div className="mt-6">
+
                   <div className="mb-4 flex items-center justify-between">
+
                     <h1 className="text-lg font-bold text-white">
                       Fair Play & Faltas
                     </h1>
@@ -1201,83 +1229,106 @@ console.log(
                     <span className="text-sm text-zinc-400">
                       ⓘ
                     </span>
+
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
 
                     {/* Mais disciplinada */}
+
                     <div className="rounded-2xl bg-zinc-900 px-4 py-6">
 
                       <div className="flex items-center gap-2 text-lime-400">
+
                         <BsHandThumbsUp className="h-5 w-5" />
 
                         <span className="text-[11px] font-bold">
                           + DISCIPLINADA
                         </span>
+
                       </div>
 
                       <div className="mt-8">
+
                         <h2 className="text-xl font-bold text-white">
-                          {leagueStatistics.fairPlay.mostDisciplined.team}
+                          {mostDisciplined?.team || "Carregando..."}
                         </h2>
 
                         <p className="mt-3 text-sm text-lime-100/70">
-                          {leagueStatistics.fairPlay.mostDisciplined.yellowCards} amarelos
+                          {mostDisciplined?.yellowCards || 0} amarelos
                           {" • "}
-                          {leagueStatistics.fairPlay.mostDisciplined.redCards} vermelho
+                          {mostDisciplined?.redCards || 0} vermelho
                         </p>
+
                       </div>
 
                       <div className="mt-6 rounded-xl bg-zinc-800 px-4 py-3">
+
                         <div className="flex items-center justify-between">
+
                           <span className="text-sm text-lime-400">
-                            Méd. faltas
+                            Méd. cartões
                           </span>
 
                           <span className="text-sm font-bold text-lime-400">
-                            {leagueStatistics.fairPlay.mostDisciplined.averageFouls}/j
+                            {mostDisciplined?.averageCards || "0.0"}/j
                           </span>
+
                         </div>
+
                       </div>
+
                     </div>
 
-                    {/* Mais faltosa */}
+
+                    {/* Mais cartões */}
+
                     <div className="rounded-2xl bg-zinc-900 px-4 py-6">
 
                       <div className="flex items-center gap-2 text-red-400">
+
                         <CiWarning className="h-5 w-5" />
 
                         <span className="text-[11px] font-bold">
                           + FALTOSA
                         </span>
+
                       </div>
 
                       <div className="mt-8">
+
                         <h2 className="text-xl font-bold text-white">
-                          {leagueStatistics.fairPlay.mostFouls.team}
+                          {mostFouls?.team || "Carregando..."}
                         </h2>
 
                         <p className="mt-3 text-sm text-lime-100/70">
-                          {leagueStatistics.fairPlay.mostFouls.yellowCards} amarelos
+                          {mostFouls?.yellowCards || 0} amarelos
                           {" • "}
-                          {leagueStatistics.fairPlay.mostFouls.redCards} vermelhos
+                          {mostFouls?.redCards || 0} vermelhos
                         </p>
+
                       </div>
 
                       <div className="mt-6 rounded-xl bg-zinc-800 px-4 py-3">
+
                         <div className="flex items-center justify-between">
+
                           <span className="text-sm text-red-400">
-                            Méd. faltas
+                            Méd. cartões
                           </span>
 
                           <span className="text-sm font-bold text-red-400">
-                            {leagueStatistics.fairPlay.mostFouls.averageFouls}/j
+                            {mostFouls?.averageCards || "0.0"}/j
                           </span>
+
                         </div>
+
                       </div>
+
                     </div>
 
                   </div>
+
                 </div>
               </div>
             )}
