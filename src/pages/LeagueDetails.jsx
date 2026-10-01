@@ -140,6 +140,10 @@ export default function LeagueDetails() {
       )[0]
       : null;
 
+  console.log("🟨 FAIR PLAY VÁLIDO:", validFairPlay);
+  console.log("🟢 MAIS DISCIPLINADA:", mostDisciplined);
+  console.log("🔴 MAIS CARTÕES:", mostFouls);
+
   const {
     topScorers,
     iLoading: topScorersLoading,
@@ -1216,14 +1220,14 @@ export default function LeagueDetails() {
 
                 </div>
 
-                {/* FAIR PLAY & FALTAS */}
+                {/* FAIR PLAY & CARTÕES */}
 
                 <div className="mt-6">
 
                   <div className="mb-4 flex items-center justify-between">
 
                     <h1 className="text-lg font-bold text-white">
-                      Fair Play & Faltas
+                       Fair Play & Cartões
                     </h1>
 
                     <span className="text-sm text-zinc-400">
@@ -1255,9 +1259,9 @@ export default function LeagueDetails() {
                         </h2>
 
                         <p className="mt-3 text-sm text-lime-100/70">
-                          {mostDisciplined?.yellowCards || 0} amarelos
+                          {mostDisciplined?.yellowCards ?? 0} amarelos
                           {" • "}
-                          {mostDisciplined?.redCards || 0} vermelho
+                          {mostDisciplined?.redCards ?? 0} vermelho
                         </p>
 
                       </div>
@@ -1271,7 +1275,7 @@ export default function LeagueDetails() {
                           </span>
 
                           <span className="text-sm font-bold text-lime-400">
-                            {mostDisciplined?.averageCards || "0.0"}/j
+                            {mostDisciplined?.averageCards ?? "0.0"}/j
                           </span>
 
                         </div>
@@ -1290,7 +1294,7 @@ export default function LeagueDetails() {
                         <CiWarning className="h-5 w-5" />
 
                         <span className="text-[11px] font-bold">
-                          + FALTOSA
+                          + MAIS CARTÕES
                         </span>
 
                       </div>
@@ -1302,9 +1306,9 @@ export default function LeagueDetails() {
                         </h2>
 
                         <p className="mt-3 text-sm text-lime-100/70">
-                          {mostFouls?.yellowCards || 0} amarelos
+                          {mostFouls?.yellowCards ?? 0} amarelos
                           {" • "}
-                          {mostFouls?.redCards || 0} vermelhos
+                          {mostFouls?.redCards ?? 0} vermelho
                         </p>
 
                       </div>
@@ -1317,8 +1321,8 @@ export default function LeagueDetails() {
                             Méd. cartões
                           </span>
 
-                          <span className="text-sm font-bold text-red-400">
-                            {mostFouls?.averageCards || "0.0"}/j
+                          <span className="text-sm font-bold text-lime-400">
+                            {mostFouls?.averageCards ?? "0.0"}/j
                           </span>
 
                         </div>

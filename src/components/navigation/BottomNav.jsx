@@ -1,22 +1,24 @@
 import { NavLink } from 'react-router-dom'
-import { House, Trophy, ChartNoAxesColumn, User } from 'lucide-react'
+import { House, Trophy, Star, User } from 'lucide-react'
 
 const links = [
   { name: 'Jogos', path: '/', icon: House },
   { name: 'Ligas', path: '/leagues', icon: Trophy },
-  { name: 'Ranking', path: '/rankings', icon: ChartNoAxesColumn },
+  { name: 'Favoritos', path: '/favorites', icon: Star },
   { name: 'Perfil', path: '/profile', icon: User },
 ]
 
-export default function BottomNav( {scrollDirection} ) {
+export default function BottomNav({ scrollDirection }) {
   return (
-    <nav className={`fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/25 px-4 py-3 backdrop-blur-md transition-transform duration-300
-    ${
-      scrollDirection === "down"
-      ? "translate-y-full"
-      : "translate-y-0"
-    }
-    `}>
+    <nav
+      className={`fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-zinc-900 bg-black/25 px-4 py-3 backdrop-blur-md transition-transform duration-300
+      ${
+        scrollDirection === 'down'
+          ? 'translate-y-full'
+          : 'translate-y-0'
+      }
+      `}
+    >
       {links.map((item) => {
         const Icon = item.icon
 
@@ -26,7 +28,9 @@ export default function BottomNav( {scrollDirection} ) {
             to={item.path}
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 text-xs font-medium transition ${
-                isActive ? 'text-lime-400' : 'text-zinc-500'
+                isActive
+                  ? 'text-lime-400'
+                  : 'text-zinc-500'
               }`
             }
           >
