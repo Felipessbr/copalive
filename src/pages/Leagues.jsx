@@ -2,6 +2,7 @@ import Header from "../components/navigation/Header";
 import BottomNav from "../components/navigation/BottomNav";
 import useLeagues from "../hooks/useLeagues";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
+import { leagues as mainLeagues } from "../components/constants/leagues";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +37,13 @@ export default function Leagues() {
     };
 
     // Filtra as ligas conforme o usuário digita
-    const filteredLeagues = leagues.filter((league) => {
+   const mainLeagueIds = new Set(
+    mainLeagues.map((league) => league.id)
+);
+
+const filteredLeagues = leagues
+    .filter((league) => mainLeagueIds.has(league.id))
+    .filter((league) => {
         const name = normalizeText(league.name);
         const country = normalizeText(league.country);
         const searchTermNormalized = normalizeText(search);
@@ -46,7 +53,7 @@ export default function Leagues() {
             country.includes(searchTermNormalized)
         );
     });
-
+    
     const handleLeagueClick = (league) => {
             navigate(`/leagues/${league.id}`); 
     }
