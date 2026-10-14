@@ -1316,3 +1316,57 @@ export async function getLeaguePossession(
     return [];
   }
 }
+
+export async function getTeamRecentMatches(teamId) {
+  if (!teamId) return [];
+
+  try {
+    const cacheKey = `copalive-team-recent-${teamId}`;
+
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get(ENDPOINTS.FIXTURES, {
+        params: {
+          team: teamId,
+          last: 5,
+          timezone: "America/Sao_Paulo",
+        },
+      })
+    );
+
+    return response.data.response || [];
+  } catch (error) {
+    console.error(
+      "Erro ao buscar os últimos jogos do clube:",
+      error.response?.data || error
+    );
+
+    return [];
+  }
+}
+
+export async function getTeamNextMatch(teamId) {
+  if (!teamId) return [];
+
+  try {
+    const cacheKey = `copalive-team-next-${teamId}`;
+
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get(ENDPOINTS.FIXTURES, {
+        params: {
+          team: teamId,
+          next: 1,
+          timezone: "America/Sao_Paulo",
+        },
+      })
+    );
+
+    return response.data.response || [];
+  } catch (error) {
+    console.error(
+      "Erro ao buscar a próxima partida do clube:",
+      error.response?.data || error
+    );
+
+    return [];
+  }
+}

@@ -5,16 +5,31 @@ import { HiMagnifyingGlass } from "react-icons/hi2";
 import { HiShieldCheck } from "react-icons/hi2";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
 import useFavorites from "../hooks/useFavorites";
+import BottomNav from "../components/navigation/BottomNav";
+import useFavoriteClubDetails from "../hooks/useFavoriteClubDetails";
 
 export default function Favorites() {
   const { favoriteLeagues } = useFavoriteLeagues();
-  const { favorites: favoriteClubs } = useFavorites();
-  const [activeFilter, setActiveFilter] = useState("ligas");
+  const {
+    favorites: favoriteClubs,
+    toggleFavorite,
+  } = useFavorites();
+  const [activeFilter, setActiveFilter] = useState("todos");
+
+  const featuredClub = favoriteClubs[0];
+
+  const {
+    recentMatches,
+    nextMatch,
+    loading: clubDetailsLoading,
+    error: clubDetailsError,
+  } = useFavoriteClubDetails(featuredClub);
 
 
   const filters = [
+    { id: "todos", label: "TODOS", count: favoriteLeagues.length + favoriteClubs.length },
     { id: "ligas", label: "LIGAS", count: favoriteLeagues.length },
-    { id: "clubes", label: "CLUBES", count: null },
+    { id: "clubes", label: "CLUBES", count: favoriteClubs.length },
   ];
 
   return (
@@ -65,7 +80,7 @@ export default function Favorites() {
         })}
       </div>
 
-      {activeFilter === "ligas" && (
+      {(activeFilter === "todos" || activeFilter === "ligas") && (
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-lg font-bold">
@@ -80,14 +95,14 @@ export default function Favorites() {
 
           {favoriteLeagues.length > 0 ? (
             <div
-             className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory cursor-grab touch-pan-x"
+              className="-mx-4 flex w-[calc(100%+2rem)] gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory cursor-grab touch-pan-x"
               style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
             >
               {favoriteLeagues.map((league) => (
                 <Link
                   key={league.id}
                   to={`/leagues/${league.id}`}
-                 className="flex w-[300px] min-w-[300px] shrink-0 snap-start flex-col rounded-3xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-lime-400/50"
+                  className="flex w-[300px] min-w-[300px] shrink-0 snap-start flex-col rounded-3xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-lime-400/50"
                 >
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-800">
@@ -128,62 +143,171 @@ export default function Favorites() {
         </section>
       )}
 
-    {activeFilter === "clubes" && (
-  <section>
-    <div className="mb-4 flex items-center justify-between">
-      <h2 className="flex items-center gap-2 text-lg font-bold">
-        <span className="h-5 w-1 rounded-full bg-lime-400" />
-        Clubes favoritos
-      </h2>
+      {(activeFilter === "todos" || activeFilter === "clubes") && (
+        <section className="space-y-5">
+          {/* Cabeçalho da seção */}
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-3 text-xl font-bold">
+              <span className="h-6 w-1.5 rounded-full bg-lime-400" />
+              Clubes Favoritos
+            </h2>
 
-      <span className="text-sm font-bold text-lime-400">
-        {favoriteClubs.length}
-      </span>
-    </div>
-
-    {favoriteClubs.length > 0 ? (
-      <div className="flex flex-col gap-3">
-        {favoriteClubs.map((club) => (
-          <div
-            key={club.id}
-            className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
-          >
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
-              {club.logo ? (
-                <img
-                  src={club.logo}
-                  alt={`Escudo ${club.name}`}
-                  className="h-10 w-10 object-contain"
-                />
-              ) : (
-                <HiShieldCheck className="h-6 w-6 text-lime-400" />
-              )}
-            </div>
-
-            <div>
-              <h3 className="font-bold">{club.name}</h3>
-              <p className="mt-1 text-xs text-zinc-400">
-                Clube favorito
-              </p>
-            </div>
+            <span className="text-sm font-bold text-lime-400">
+              {favoriteClubs.length} clubes
+            </span>
           </div>
-        ))}
-      </div>
-    ) : (
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-10 text-center">
-        <Star className="mx-auto mb-3 h-7 w-7 text-zinc-500" />
 
-        <h3 className="font-semibold">
-          Nenhum clube favorito
-        </h3>
+          {favoriteClubs.length > 0 ? (
+            <>
+              {/* Clube em destaque */}
+              <div className="overflow-hidden rounded-[28px] border border-zinc-700 bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-800 p-5">
+                {/* Informações principais */}
+                <div className="flex items-center gap-4">
+                  <div className="flex h-[76px] w-[76px] shrink-0 items-center justify-center rounded-full border-[3px] border-lime-400/50 bg-zinc-800">
+                    {favoriteClubs[0].logo ? (
+                      <img
+                        src={favoriteClubs[0].logo}
+                        alt={`Escudo ${favoriteClubs[0].name}`}
+                        className="h-12 w-12 object-contain"
+                      />
+                    ) : (
+                      <HiShieldCheck className="h-9 w-9 text-lime-400" />
+                    )}
+                  </div>
 
-        <p className="mt-2 text-sm text-zinc-400">
-          Favorite um clube pela estrela nos cards de jogos para vê-lo aqui.
-        </p>
-      </div>
-    )}
-  </section>
-)}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-2xl font-extrabold leading-tight">
+                        {favoriteClubs[0].name}
+                      </h3>
+                      <Star className="h-6 w-6 shrink-0 fill-lime-400 text-lime-400" />
+                    </div>
+
+                    <p className="mt-1 text-base text-zinc-300">
+                      Clube acompanhado no CopaLive
+                    </p>
+                  </div>
+
+                  {/* Forma recente: visual provisório */}
+
+                  {/* Forma recente */}
+                  <div className="hidden shrink-0 text-center sm:block">
+                    <p className="mb-3 text-sm font-bold tracking-wide text-zinc-300">
+                      FORMA
+                    </p>
+
+                    <div className="flex gap-2">
+                      {clubDetailsLoading ? (
+                        <span className="text-xs text-zinc-400">Carregando...</span>
+                      ) : recentMatches.length > 0 ? (
+                        [...recentMatches].reverse().slice(-3).map((match) => (
+                          <span
+                            key={match.id}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-extrabold ${match.result === "V"
+                                ? "bg-lime-400 text-black"
+                                : match.result === "E"
+                                  ? "bg-zinc-600 text-white"
+                                  : match.result === "D"
+                                    ? "bg-red-500 text-white"
+                                    : "bg-zinc-700 text-white"
+                              }`}
+                          >
+                            {match.result ?? "-"}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-zinc-400">
+                          Sem resultados
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Próximo jogo: aguardando integração com os dados da API */}
+                <div className="mt-6 flex items-center gap-3 rounded-[22px] border border-zinc-700/70 bg-zinc-800/80 p-4">
+                  <span className="shrink-0 rounded-lg bg-lime-400 px-3 py-2 text-xs font-extrabold text-black">
+                    JOGOS
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">Acompanhe as partidas</p>
+                    <p className="mt-1 text-xs text-zinc-400">
+                      Consulte os jogos na tela inicial
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/"
+                    className="shrink-0 text-sm font-bold text-lime-400 transition hover:text-lime-300"
+                  >
+                    Ver →
+                  </Link>
+                </div>
+
+                {/* Outros clubes seguidos */}
+                {favoriteClubs.length > 1 && (
+                  <div className="mt-5 border-t border-zinc-700 pt-5">
+                    <p className="mb-3 text-sm text-zinc-300">
+                      Outros clubes seguidos:
+                    </p>
+
+                    <div
+                      className="flex gap-2 overflow-x-auto overscroll-x-contain pb-2 snap-x snap-mandatory"
+                      style={{
+                        scrollbarWidth: "none",
+                        WebkitOverflowScrolling: "touch",
+                      }}
+                    >
+                      {favoriteClubs.slice(1).map((club) => (
+                        <div
+                          key={club.id}
+                          className="flex shrink-0 snap-start items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-2"
+                        >
+                          {club.logo ? (
+                            <img
+                              src={club.logo}
+                              alt=""
+                              className="h-5 w-5 shrink-0 object-contain"
+                            />
+                          ) : (
+                            <HiShieldCheck className="h-4 w-4 shrink-0 text-lime-400" />
+                          )}
+
+                          <span className="whitespace-nowrap text-sm font-semibold">
+                            {club.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-10 text-center">
+              <Star className="mx-auto mb-3 h-7 w-7 text-zinc-500" />
+
+              <h3 className="font-semibold">
+                Nenhum clube favorito
+              </h3>
+
+              <p className="mt-2 text-sm text-zinc-400">
+                Favorite um clube pela estrela nos cards de jogos para vê-lo aqui.
+              </p>
+
+              <Link
+                to="/"
+                className="mt-5 inline-block rounded-full bg-lime-400 px-5 py-2 text-sm font-bold text-black"
+              >
+                Explorar jogos
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
+      <BottomNav />
     </main>
   );
 }
