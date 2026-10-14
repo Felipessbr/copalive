@@ -2,11 +2,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Trophy, Star, Search } from "lucide-react";
 import { HiMagnifyingGlass } from "react-icons/hi2";
+import { HiShieldCheck } from "react-icons/hi2";
 import useFavoriteLeagues from "../hooks/useFavoriteLeagues";
+import useFavorites from "../hooks/useFavorites";
 
 export default function Favorites() {
   const { favoriteLeagues } = useFavoriteLeagues();
+  const { favorites: favoriteClubs } = useFavorites();
   const [activeFilter, setActiveFilter] = useState("ligas");
+
 
   const filters = [
     { id: "ligas", label: "LIGAS", count: favoriteLeagues.length },
@@ -124,18 +128,62 @@ export default function Favorites() {
         </section>
       )}
 
-      {activeFilter === "clubes" && (
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-10 text-center">
-          <Star className="mx-auto mb-3 h-7 w-7 text-zinc-500" />
+    {activeFilter === "clubes" && (
+  <section>
+    <div className="mb-4 flex items-center justify-between">
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <span className="h-5 w-1 rounded-full bg-lime-400" />
+        Clubes favoritos
+      </h2>
 
-          <h2 className="font-semibold">Seus clubes favoritos</h2>
+      <span className="text-sm font-bold text-lime-400">
+        {favoriteClubs.length}
+      </span>
+    </div>
 
-          <p className="mt-2 text-sm text-zinc-400">
-            Em breve, você poderá favoritar clubes pelos escudos nos cards
-            dos jogos e acompanhar todos aqui.
-          </p>
-        </section>
-      )}
+    {favoriteClubs.length > 0 ? (
+      <div className="flex flex-col gap-3">
+        {favoriteClubs.map((club) => (
+          <div
+            key={club.id}
+            className="flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+          >
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
+              {club.logo ? (
+                <img
+                  src={club.logo}
+                  alt={`Escudo ${club.name}`}
+                  className="h-10 w-10 object-contain"
+                />
+              ) : (
+                <HiShieldCheck className="h-6 w-6 text-lime-400" />
+              )}
+            </div>
+
+            <div>
+              <h3 className="font-bold">{club.name}</h3>
+              <p className="mt-1 text-xs text-zinc-400">
+                Clube favorito
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-10 text-center">
+        <Star className="mx-auto mb-3 h-7 w-7 text-zinc-500" />
+
+        <h3 className="font-semibold">
+          Nenhum clube favorito
+        </h3>
+
+        <p className="mt-2 text-sm text-zinc-400">
+          Favorite um clube pela estrela nos cards de jogos para vê-lo aqui.
+        </p>
+      </div>
+    )}
+  </section>
+)}
     </main>
   );
 }
