@@ -1332,6 +1332,7 @@ export async function getTeamRecentMatches(teamId) {
         },
       })
     );
+    console.log("Resposta da API:", response.data);
 
     return response.data.response || [];
   } catch (error) {
@@ -1358,8 +1359,9 @@ export async function getTeamNextMatch(teamId) {
           timezone: "America/Sao_Paulo",
         },
       })
+      
     );
-
+    console.log("Resposta da API:", response.data);
     return response.data.response || [];
   } catch (error) {
     console.error(
@@ -1369,4 +1371,5 @@ export async function getTeamNextMatch(teamId) {
 
     return [];
   }
+
 }

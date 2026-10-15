@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from "react";
 import {
   getTeamRecentMatches,
   getTeamNextMatch,
+  getLeagueStandings,
 } from "../services/footballApi";
 
 function getMatchResult(match, teamId) {
@@ -25,9 +25,13 @@ function getMatchResult(match, teamId) {
   return "E";
 }
 
-export default function useFavoriteClubDetails(team) {
+export default function useFavoriteClubDetails(
+  team,
+  favoriteLeagues = []
+) {
   const [recentMatches, setRecentMatches] = useState([]);
   const [nextMatch, setNextMatch] = useState(null);
+  const [standings, setStandings] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -35,6 +39,9 @@ export default function useFavoriteClubDetails(team) {
     if (!team?.id) {
       setRecentMatches([]);
       setNextMatch(null);
+      setStandings(null);
+      setLoading(false);
+      setError(null);
       return;
     }
 
@@ -43,12 +50,49 @@ export default function useFavoriteClubDetails(team) {
     async function loadDetails() {
       setLoading(true);
       setError(null);
+      setStandings(null);
 
       try {
         const [recent, upcoming] = await Promise.all([
           getTeamRecentMatches(team.id),
           getTeamNextMatch(team.id),
         ]);
+
+        const favoriteLeagueIds = favoriteLeagues.map(
+          (league) => Number(league.id)
+        );
+
+        const leagueFixture = [...upcoming, ...recent].find(
+          (match) =>
+            favoriteLeagueIds.includes(
+              Number(match.league?.id)
+            )
+        );
+
+        let standingsResult = null;
+
+        if (leagueFixture) {
+          const standingsData = await getLeagueStandings(
+            leagueFixture.league.id,
+            leagueFixture.league.season
+          );
+
+          const table =
+            standingsData[0]?.league?.standings?.flat() || [];
+
+          const teamStanding = table.find(
+            (row) =>
+              Number(row.team.id) === Number(team.id)
+          );
+
+          if (teamStanding) {
+            standingsResult = {
+              rank: teamStanding.rank,
+              points: teamStanding.points,
+              leagueName: leagueFixture.league.name,
+            };
+          }
+        }
 
         if (cancelled) return;
 
@@ -73,13 +117,21 @@ export default function useFavoriteClubDetails(team) {
         );
 
         setNextMatch(upcoming[0] || null);
+        setStandings(standingsResult);
       } catch (err) {
         if (!cancelled) {
-          console.error("Erro ao carregar dados do favorito:", err);
-          setError("Não foi possível carregar os dados do clube.");
+          console.error(
+            "Erro ao carregar dados do favorito:",
+            err
+          );
+          setError(
+            "Não foi possível carregar os dados do clube."
+          );
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -88,11 +140,12 @@ export default function useFavoriteClubDetails(team) {
     return () => {
       cancelled = true;
     };
-  }, [team?.id]);
+  }, [team?.id, favoriteLeagues]);
 
   return {
     recentMatches,
     nextMatch,
+    standings,
     loading,
     error,
   };

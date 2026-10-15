@@ -21,10 +21,10 @@ export default function Favorites() {
   const {
     recentMatches,
     nextMatch,
+    standings,
     loading: clubDetailsLoading,
     error: clubDetailsError,
-  } = useFavoriteClubDetails(featuredClub);
-
+  } = useFavoriteClubDetails(featuredClub, favoriteLeagues);
 
   const filters = [
     { id: "todos", label: "TODOS", count: favoriteLeagues.length + favoriteClubs.length },
@@ -183,12 +183,22 @@ export default function Favorites() {
                       <Star className="h-6 w-6 shrink-0 fill-lime-400 text-lime-400" />
                     </div>
 
-                    <p className="mt-1 text-base text-zinc-300">
-                      Clube acompanhado no CopaLive
-                    </p>
-                  </div>
+                    {standings && (
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="text-zinc-400">
+                          {standings.leagueName}
+                        </span>
 
-                  {/* Forma recente: visual provisório */}
+                        <span className="rounded-md bg-lime-400/10 px-2 py-1 font-semibold text-lime-400">
+                          {standings.rank}º lugar
+                        </span>
+
+                        <span className="text-zinc-300">
+                          {standings.points} pts
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Forma recente */}
                   <div className="hidden shrink-0 text-center sm:block">
@@ -204,12 +214,12 @@ export default function Favorites() {
                           <span
                             key={match.id}
                             className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-extrabold ${match.result === "V"
-                                ? "bg-lime-400 text-black"
-                                : match.result === "E"
-                                  ? "bg-zinc-600 text-white"
-                                  : match.result === "D"
-                                    ? "bg-red-500 text-white"
-                                    : "bg-zinc-700 text-white"
+                              ? "bg-lime-400 text-black"
+                              : match.result === "E"
+                                ? "bg-zinc-600 text-white"
+                                : match.result === "D"
+                                  ? "bg-red-500 text-white"
+                                  : "bg-zinc-700 text-white"
                               }`}
                           >
                             {match.result ?? "-"}
@@ -226,25 +236,77 @@ export default function Favorites() {
                 </div>
 
                 {/* Próximo jogo: aguardando integração com os dados da API */}
-                <div className="mt-6 flex items-center gap-3 rounded-[22px] border border-zinc-700/70 bg-zinc-800/80 p-4">
-                  <span className="shrink-0 rounded-lg bg-lime-400 px-3 py-2 text-xs font-extrabold text-black">
-                    JOGOS
-                  </span>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold">Acompanhe as partidas</p>
-                    <p className="mt-1 text-xs text-zinc-400">
-                      Consulte os jogos na tela inicial
+                {/* Próxima partida */}
+                <div className="mt-6 rounded-[22px] border border-zinc-700/70 bg-zinc-800/80 p-4">
+                  {clubDetailsLoading ? (
+                    <p className="text-sm text-zinc-400">
+                      Buscando próxima partida...
                     </p>
-                  </div>
+                  ) : nextMatch ? (
+                    <>
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <span className="rounded-lg bg-lime-400 px-3 py-2 text-xs font-extrabold text-black">
+                          PRÓXIMO JOGO
+                        </span>
 
-                  <Link
-                    to="/"
-                    className="shrink-0 text-sm font-bold text-lime-400 transition hover:text-lime-300"
-                  >
-                    Ver →
-                  </Link>
+                        <span className="truncate text-xs text-zinc-400">
+                          {nextMatch.league?.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
+                          {nextMatch.teams?.home?.logo && (
+                            <img
+                              src={nextMatch.teams.home.logo}
+                              alt={nextMatch.teams.home.name}
+                              className="h-12 w-12 object-contain"
+                            />
+                          )}
+                          <span className="text-sm font-bold">
+                            {nextMatch.teams?.home?.name}
+                          </span>
+                        </div>
+
+                        <span className="shrink-0 text-sm font-extrabold text-zinc-400">
+                          VS
+                        </span>
+
+                        <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
+                          {nextMatch.teams?.away?.logo && (
+                            <img
+                              src={nextMatch.teams.away.logo}
+                              alt={nextMatch.teams.away.name}
+                              className="h-12 w-12 object-contain"
+                            />
+                          )}
+                          <span className="text-sm font-bold">
+                            {nextMatch.teams?.away?.name}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="mt-4 text-center text-sm text-zinc-300">
+                        {new Date(nextMatch.fixture.date).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: "America/Sao_Paulo",
+                        })}
+                      </p>
+                    </>
+                  ) : (
+                    <div>
+                      <p className="font-bold">Nenhuma próxima partida encontrada</p>
+                      <p className="mt-1 text-xs text-zinc-400">
+                        Não há jogo futuro disponível para este clube na API.
+                      </p>
+                    </div>
+                  )}
                 </div>
+
 
                 {/* Outros clubes seguidos */}
                 {favoriteClubs.length > 1 && (
