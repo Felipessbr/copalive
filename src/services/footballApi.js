@@ -117,30 +117,49 @@ async function cachedApiRequest(key, request) {
   return requestPromise;
 }
 
-export async function getMatchesByDate(date) {
+export async function getTeamRecentMatches(teamId) {
+  if (!teamId) return [];
+
   try {
-    const response = await api.get(
-      `${ENDPOINTS.FIXTURES}?date=${date}&timezone=America/Sao_Paulo`
-    );
+    const today = new Date();
+    const matchesByDate = [];
+    const datesToSearch = 7;
 
-    console.log("Data buscada:", date);
+    for (let i = 1; i <= datesToSearch; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
 
-    console.log(
-      "Partidas encontradas:",
-      response.data.response.map((match) => ({
-        id: match.fixture.id,
-        data: match.fixture.date,
-        liga: match.league.name,
-        casa: match.teams.home.name,
-        fora: match.teams.away.name,
-        status: match.fixture.status.short,
-      }))
-    );
+      const formattedDate = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
 
-    return response.data.response;
+      const matches = await getMatchesByDate(formattedDate);
+
+      const teamMatches = matches.filter(
+        (match) =>
+          Number(match.teams.home.id) === Number(teamId) ||
+          Number(match.teams.away.id) === Number(teamId)
+      );
+
+      matchesByDate.push(...teamMatches);
+    }
+
+    return matchesByDate
+      .filter((match) =>
+        ["FT", "AET", "PEN"].includes(
+          match.fixture?.status?.short
+        )
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.fixture.date) - new Date(a.fixture.date)
+      )
+      .slice(0, 5);
   } catch (error) {
     console.error(
-      "Erro ao buscar partidas por data:",
+      "Erro ao buscar jogos recentes:",
       error.response?.data || error
     );
 
@@ -184,6 +203,32 @@ export async function getFinishedMatches(date) {
     return [];
   }
 }
+
+
+export async function getMatchesByDate(date) {
+  try {
+    const cacheKey = `copalive-fixtures-date-${date}`;
+
+    const response = await cachedApiRequest(cacheKey, () =>
+      api.get(ENDPOINTS.FIXTURES, {
+        params: {
+          date,
+          timezone: "America/Sao_Paulo",
+        },
+      })
+    );
+
+    return response.data?.response || [];
+  } catch (error) {
+    console.error(
+      "Erro ao buscar partidas por data:",
+      error.response?.data || error
+    );
+
+    return [];
+  }
+}
+
 
 export async function getLeagues() {
   try {
@@ -450,7 +495,6 @@ export async function getLeagueTopYellowCards(
     return [];
   }
 }
-
 
 async function getFixtureStatistics(fixtureId) {
   const cacheKey = `copalive-fixture-statistics-${fixtureId}`;
@@ -1317,59 +1361,60 @@ export async function getLeaguePossession(
   }
 }
 
-export async function getTeamRecentMatches(teamId) {
-  if (!teamId) return [];
-
-  try {
-    const cacheKey = `copalive-team-recent-${teamId}`;
-
-    const response = await cachedApiRequest(cacheKey, () =>
-      api.get(ENDPOINTS.FIXTURES, {
-        params: {
-          team: teamId,
-          last: 5,
-          timezone: "America/Sao_Paulo",
-        },
-      })
-    );
-    console.log("Resposta da API:", response.data);
-
-    return response.data.response || [];
-  } catch (error) {
-    console.error(
-      "Erro ao buscar os últimos jogos do clube:",
-      error.response?.data || error
-    );
-
-    return [];
-  }
-}
 
 export async function getTeamNextMatch(teamId) {
-  if (!teamId) return [];
+  if (!teamId) return null;
 
   try {
-    const cacheKey = `copalive-team-next-${teamId}`;
+    const today = new Date();
+    const matchesByDate = [];
 
-    const response = await cachedApiRequest(cacheKey, () =>
-      api.get(ENDPOINTS.FIXTURES, {
-        params: {
-          team: teamId,
-          next: 1,
-          timezone: "America/Sao_Paulo",
-        },
-      })
-      
+    // O plano gratuito pode limitar as datas disponíveis.
+    // Consultamos apenas hoje e os próximos 2 dias.
+    for (let i = 0; i <= 2; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      const formattedDate = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      const matches = await getMatchesByDate(formattedDate);
+
+      const teamMatches = matches.filter((match) => {
+        const involvesTeam =
+          Number(match.teams.home.id) === Number(teamId) ||
+          Number(match.teams.away.id) === Number(teamId);
+
+        const status = match.fixture?.status?.short;
+
+        return (
+          involvesTeam &&
+          ["NS", "TBD"].includes(status) &&
+          new Date(match.fixture.date) >= today
+        );
+      });
+
+      matchesByDate.push(...teamMatches);
+
+      if (teamMatches.length > 0) break;
+    }
+
+    return (
+      matchesByDate.sort(
+        (a, b) =>
+          new Date(a.fixture.date) - new Date(b.fixture.date)
+      )[0] || null
     );
-    console.log("Resposta da API:", response.data);
-    return response.data.response || [];
   } catch (error) {
     console.error(
       "Erro ao buscar a próxima partida do clube:",
       error.response?.data || error
     );
 
-    return [];
+    return null;
   }
-
 }
+

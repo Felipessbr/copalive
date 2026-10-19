@@ -62,11 +62,13 @@ export default function useFavoriteClubDetails(
           (league) => Number(league.id)
         );
 
-        const leagueFixture = [...upcoming, ...recent].find(
-          (match) =>
-            favoriteLeagueIds.includes(
-              Number(match.league?.id)
-            )
+        const fixturesForLeague = [
+          ...(upcoming ? [upcoming] : []),
+          ...recent,
+        ];
+
+        const leagueFixture = fixturesForLeague.find(
+          (match) => favoriteLeagueIds.includes(Number(match.league?.id))
         );
 
         let standingsResult = null;
@@ -116,7 +118,7 @@ export default function useFavoriteClubDetails(
           }))
         );
 
-        setNextMatch(upcoming[0] || null);
+       setNextMatch(upcoming || null);
         setStandings(standingsResult);
       } catch (err) {
         if (!cancelled) {
